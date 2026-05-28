@@ -7,8 +7,8 @@ kill_signal = "SIGINT"
 kill_timeout = "5s"
 
 [build]
-  # Using our custom multi-stage Dockerfile
-  dockerfile = "Dockerfile"
+  # Using our custom multi-stage Dockerfile (renamed so Render uses Node runtime)
+  dockerfile = "Dockerfile.flyio"
 
 [env]
   PORT = "8080"

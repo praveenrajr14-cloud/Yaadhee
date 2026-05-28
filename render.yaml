@@ -8,11 +8,11 @@ services:
     region: singapore       # Closest to India
     plan: free              # Free tier
 
-    # Build phase
+    # Build: install deps + compile sqlite3 native binary for Linux
     buildCommand: npm install && npm rebuild sqlite3 --build-from-source
 
-    # Start phase
-    startCommand: node server.js
+    # Start: seed DB if missing, then launch server
+    startCommand: node -e "const fs=require('fs'); if(!fs.existsSync('yadhee.db')){ require('./db_init'); }" && node server.js
 
     # Health check endpoint
     healthCheckPath: /
@@ -21,8 +21,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000        # Render injects PORT automatically, but being explicit
 
     # Auto-deploy on every push to main branch
     autoDeploy: true
