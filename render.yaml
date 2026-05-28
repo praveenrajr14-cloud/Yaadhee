@@ -9,7 +9,7 @@ services:
     plan: free              # Free tier
 
     # Build phase
-    buildCommand: npm install
+    buildCommand: npm install && npm rebuild sqlite3 --build-from-source
 
     # Start phase
     startCommand: node server.js
