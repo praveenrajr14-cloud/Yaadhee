@@ -1,0 +1,52 @@
+<%- include('partials/header', { activePage: 'new-arrivals', title: 'New Arrivals | Yadhee Luxury Heritage' }) %>
+
+    <!-- Page Banner Header -->
+    <section class="page-title-banner" style="background-image: linear-gradient(rgba(30, 2, 6, 0.85), rgba(30, 2, 6, 0.7)), url('assets/hero_jewel.png');">
+        <div class="banner-content text-center">
+            <span class="section-accent">The Autumnal Trousseau Curation</span>
+            <h1 class="page-main-title">The New Arrivals Vault</h1>
+            <p class="banner-subtitle">Acquire the newest limited-edition weaves and handcrafted ornaments released straight from our design ateliers.</p>
+        </div>
+    </section>
+
+    <!-- Curated New Arrivals Grid -->
+    <section class="gallery-section">
+        <div class="section-container">
+            <div class="gallery-header text-center reveal-on-scroll">
+                <span class="section-accent">Loom & Forge Fresh Releases</span>
+                <h2 class="section-title">Masterpieces of the Season</h2>
+            </div>
+
+            <div class="product-grid">
+                <% products.forEach(function(product) { %>
+                <div class="product-card reveal-on-scroll" data-category="<%= product.category %>" data-id="<%= product.id %>">
+                    <div class="product-media-wrapper">
+                        <img src="<%= product.image_url %>" alt="<%= product.name %>" class="product-img">
+                        <div class="card-overlay-actions">
+                            <button class="card-btn quick-view-btn" aria-label="Quick View"><i class="fa-solid fa-eye"></i></button>
+                            <button class="card-btn fav-add-btn" aria-label="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
+                        </div>
+                        <% if (product.stock_quantity === 1) { %>
+                            <span class="product-tag scarcity-tag alert-tag">Only 1 Left</span>
+                        <% } else if (product.stock_quantity === 2) { %>
+                            <span class="product-tag scarcity-tag warning-tag">Rare Find</span>
+                        <% } else if (product.tag) { %>
+                            <span class="product-tag <%= product.category === 'saree' ? 'luxury-tag' : 'bespoke-tag' %>"><%= product.tag %></span>
+                        <% } %>
+                    </div>
+                    <div class="product-details">
+                        <span class="product-type"><%= product.type %></span>
+                        <h3 class="product-name"><%= product.name %></h3>
+                        <div class="price-container">
+                            <span class="price">₹<%= product.price_inr.toLocaleString('en-IN') %></span>
+                            <span class="price-usd">($<%= product.price_usd.toLocaleString() %>)</span>
+                        </div>
+                        <button class="add-to-bag-btn">Acquire <%= product.category === 'saree' ? 'Saree' : 'Jewels' %></button>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+    </section>
+
+<%- include('partials/footer') %>

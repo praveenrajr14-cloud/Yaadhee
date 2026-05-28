@@ -1,0 +1,192 @@
+    <!-- Dynamic Sliding Shopping Cart Drawer from Right -->
+    <div class="cart-drawer-overlay" id="cartOverlay">
+        <div class="cart-drawer" role="dialog" aria-modal="true" aria-label="Shopping Bag">
+            <div class="cart-header">
+                <h3>YOUR VALUED ACQUISITIONS</h3>
+                <button class="cart-close-btn" id="cartClose" aria-label="Close Shopping Bag">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="cart-items-container" id="cartItemsContainer">
+                <!-- Cart items loaded dynamically by JS -->
+                <div class="cart-empty-message">
+                    <i class="fa-solid fa-receipt"></i>
+                    <p>Your luxury collection vault is currently empty.</p>
+                    <a href="/sarees" class="btn btn-primary" id="emptyCartBack">Explore Collections</a>
+                </div>
+            </div>
+
+            <div class="cart-footer" id="cartFooter">
+                <!-- 5% Sovereign Discount Banner -->
+                <div class="cart-discount-banner" id="cartDiscountBanner">
+                    <i class="fa-solid fa-gift"></i>
+                    <span>Extra 5% sovereign discount applied automatically!</span>
+                </div>
+                <div class="cart-total-row">
+                    <span>Est. Sovereign Value</span>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                        <span class="cart-original-price" id="cartOriginalPrice" style="font-size: 0.8rem; color: var(--color-gray-dark); text-decoration: line-through; font-family: var(--font-body);"></span>
+                        <span class="cart-total-price" id="cartTotalPrice">₹0</span>
+                    </div>
+                </div>
+                <p class="cart-footer-note">Duties, insured global transit, and custom stitching styling adjustments are calculated at dispatch checkout.</p>
+                <button class="checkout-btn" id="checkoutBtn">Initiate Secured Dispatch <i class="fa-solid fa-arrow-right-long"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Immersive Product Quick View Details Modal -->
+    <div class="product-modal-overlay" id="productModal">
+        <div class="product-modal">
+            <button class="modal-close-btn" id="modalClose" aria-label="Close Product Details"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-content-grid" id="modalContentGrid">
+                <!-- Loaded dynamically by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Premium Checkout Modal -->
+    <div class="product-modal-overlay" id="checkoutModal">
+        <div class="product-modal" style="max-width: 600px; padding: 2.5rem; border: 1px solid var(--color-gold);">
+            <button class="modal-close-btn" id="checkoutModalClose" aria-label="Close Checkout"><i class="fa-solid fa-xmark"></i></button>
+            <div class="luxury-form-container">
+                <form id="checkoutForm" class="luxury-form">
+                    <h3 class="form-title">Secured Dispatch Registry</h3>
+                    <p style="font-size: 0.8rem; color: var(--color-gray-dark); margin-bottom: 1.5rem; text-align: center; font-family: var(--font-body);">Provide shipping details for sovereign dispatch & custom atelier sizing.</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="checkoutName">Full Name</label>
+                            <input type="text" id="checkoutName" required placeholder="Lady / Lord...">
+                        </div>
+                        <div class="form-group">
+                            <label for="checkoutEmail">Email Portal</label>
+                            <input type="email" id="checkoutEmail" required placeholder="name@domain.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkoutPhone">Phone (Secure Transit Contact)</label>
+                        <input type="tel" id="checkoutPhone" required placeholder="+91 ...">
+                    </div>
+                    <div class="form-group">
+                        <label for="checkoutAddress">Sovereign Shipping Address</label>
+                        <textarea id="checkoutAddress" rows="3" required placeholder="Full shipping address, suite, city, state, country, zip..."></textarea>
+                    </div>
+                    <div style="border-top: 1px solid var(--color-gray-medium); padding-top: 1.5rem; margin-top: 1.5rem;">
+                        <h4 style="font-family: var(--font-accent); font-size: 0.75rem; letter-spacing: 0.15em; color: var(--color-gold); margin-bottom: 1rem; text-align: center;">Payment Method (Insured Escrow Protocol)</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cardNum">Secure Card Number</label>
+                                <input type="text" id="cardNum" placeholder="4111 2222 3333 4444" pattern="\d{16}" title="16-digit card number" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cardExpiry">Expiry Date</label>
+                                <input type="text" id="cardExpiry" placeholder="MM/YY" pattern="\d{2}/\d{2}" title="MM/YY format" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cardCvv">CVV Code</label>
+                                <input type="password" id="cardCvv" placeholder="***" pattern="\d{3}" title="3-digit CVV" required>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px dashed var(--color-gold); padding-top: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label for="devForceOutcome" style="font-family: var(--font-body); font-size: 0.65rem; letter-spacing: 0.1em; color: var(--color-gold); text-transform: uppercase; font-weight: bold; text-align: center;">[DEV MODE] Force Payment Outcome</label>
+                            <select id="devForceOutcome" style="border: 1px dashed var(--color-gold); padding: 0.6rem; background: var(--color-ivory); font-family: var(--font-body); font-size: 0.8rem; color: var(--color-charcoal); text-align-last: center; cursor: pointer;">
+                                <option value="success">Force Payment: SUCCESS</option>
+                                <option value="failure">Force Payment: FAILURE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="form-submit-btn" style="margin-top: 1.5rem; width: 100%;">Authorise Insured Transit <i class="fa-solid fa-shield-halved"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast System -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Dramatic Luxury Footer -->
+    <footer class="luxury-footer">
+        <div class="section-container">
+            <div class="footer-grid">
+                <!-- Column 1: History -->
+                <div class="footer-col brand-col">
+                    <h3 class="footer-brand-title">YADHEE</h3>
+                    <p class="footer-brand-tagline">Weaves of Antiquity, Gold of Gods</p>
+                    <p class="footer-desc">Yadhee preserves the fading arts of ancient Indian royal courts, elevating traditional bridal sarees and sacred jewelry into slow-luxury couture. We stand against synthetic weaving, utilizing only certified pure materials.</p>
+                    <div class="footer-socials">
+                        <a href="#" aria-label="Instagram Page"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" aria-label="Pinterest Boards"><i class="fa-brands fa-pinterest"></i></a>
+                        <a href="#" aria-label="YouTube Channel"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" aria-label="Facebook Page"><i class="fa-brands fa-facebook-f"></i></a>
+                    </div>
+                </div>
+
+                <!-- Column 2: Collections Links -->
+                <div class="footer-col">
+                    <h4 class="footer-col-title">The Vault</h4>
+                    <ul class="footer-links">
+                        <li><a href="/sarees" class="footer-link-item">Kanchipuram Silk Sarees</a></li>
+                        <li><a href="/sarees" class="footer-link-item">Banarasi Brocades</a></li>
+                        <li><a href="/sarees" class="footer-link-item">Ivory & Gold Zari Sarees</a></li>
+                        <li><a href="/jewels" class="footer-link-item">Temple Gold Chokers</a></li>
+                        <li><a href="/jewels" class="footer-link-item">Polki Bridal Jhumkas</a></li>
+                        <li><a href="/jewels" class="footer-link-item">Filigree Heritage Bangles</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: Brand & Services Links -->
+                <div class="footer-col">
+                    <h4 class="footer-col-title">Our Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="/contact" class="footer-link-item">Virtual Atelier Curation</a></li>
+                        <li><a href="#" class="footer-link-item">Blouse Stitching & Styling</a></li>
+                        <li><a href="#" class="footer-link-item">Jewelry Resizing & Gem Care</a></li>
+                        <li><a href="#" class="footer-link-item">Insured Worldwide Dispatch</a></li>
+                        <li><a href="#" class="footer-link-item">Sovereign Authenticity Seals</a></li>
+                        <li><a href="#" class="footer-link-item">Patron Care Center</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: Newsletter -->
+                <div class="footer-col newsletter-col">
+                    <h4 class="footer-col-title">Receive The Chronicles</h4>
+                    <p class="newsletter-desc">Subscribe to obtain announcements of rare private vault collections, artisan documentary releases, and styling atelier openings.</p>
+                    <form class="footer-newsletter-form" id="newsletterForm">
+                        <input type="email" placeholder="patron@domain.com" required aria-label="Newsletter Email Input">
+                        <button type="submit" aria-label="Subscribe to newsletter"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                    <div id="newsletterSuccess" class="newsletter-success-text">Welcome to Yadhee's inner circle. Chronicles will reach you soon.</div>
+                </div>
+            </div>
+
+            <!-- Lower Footer Brand Marks and Copyright -->
+            <div class="footer-bottom">
+                <p>&copy; 2026 Yadhee Luxury Heritage Pvt. Ltd. All rights reserved. Crafted in slow fashion.</p>
+                <div class="footer-seals">
+                    <span><i class="fa-solid fa-ribbon"></i> Silk Mark Certified</span>
+                    <span><i class="fa-solid fa-shield-halved"></i> Hallmarked Gold</span>
+                    <span><i class="fa-solid fa-lock"></i> SSL Secured checkout</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating WhatsApp Shopping Assistant Widget -->
+    <a href="https://wa.me/<%= whatsappPhone %>?text=Hi!%20I%20am%20interested%20in%20exploring%20your%20exquisite%20heritage%20collections.%20Can%20you%20assist%20me?" 
+       target="_blank" 
+       class="whatsapp-widget" 
+       id="whatsappWidget" 
+       aria-label="Chat with a Stylist on WhatsApp">
+        <div class="whatsapp-tooltip">Chat with a Stylist</div>
+        <div class="whatsapp-icon-btn">
+            <i class="fa-brands fa-whatsapp"></i>
+        </div>
+    </a>
+
+    <!-- Main JavaScript Logic -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<%- include('partials/header', { activePage: 'home', title: 'Yadhee | Royal Handwoven Sarees & Heritage Jewels' }) %>
+
+    <!-- Cinematic Hero Section with Parallax Background Banners -->
+    <section class="hero-section">
+        <div class="hero-slider">
+            <!-- Slide 1: Royal Sarees -->
+            <div class="hero-slide active" style="background-image: url('assets/hero_saree.png');">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <h2 class="hero-subtitle">THE ART OF EXQUISITE WEAVES</h2>
+                    <h1 class="hero-title">Royal Crimson &<br>Antique Gold Zari</h1>
+                    <p class="hero-desc">Discover heritage silk sarees hand-loomed with pure gold thread, carrying stories of royal lineage and timeless drape.</p>
+                    <div class="hero-buttons">
+                        <a href="#collections" class="btn btn-primary scroll-to-gallery">Explore The Loom</a>
+                        <a href="#heritage" class="btn btn-secondary">Discover Heritage</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Slide 2: Sacred Jewels -->
+            <div class="hero-slide" style="background-image: url('assets/hero_jewel.png');">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <h2 class="hero-subtitle">TEMPLE & POLKI MASTERPIECES</h2>
+                    <h1 class="hero-title">Sacred Metals &<br>Uncut Diamonds</h1>
+                    <p class="hero-desc">Bespoke heirloom jewelry sculpted by generational master craftsmen, blending antique gold with rare precious gems.</p>
+                    <div class="hero-buttons">
+                        <a href="#collections" class="btn btn-primary scroll-to-gallery">Acquire Masterpieces</a>
+                        <a href="#atelier" class="btn btn-secondary">Book Custom Fitting</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slider Navigation Controls -->
+        <div class="hero-controls">
+            <button class="hero-control-btn prev" id="heroPrev"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="hero-control-btn next" id="heroNext"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+            <span class="scroll-text">Descend Into Luxury</span>
+            <div class="scroll-mouse">
+                <div class="scroll-wheel"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story / Heritage Section (The Craftsmanship) -->
+    <section class="story-section" id="heritage">
+        <div class="section-container">
+            <div class="story-grid">
+                <div class="story-visual reveal-on-scroll">
+                    <div class="story-image-wrapper parallax-container">
+                        <!-- Red saree close up visual backdrop -->
+                        <img src="assets/hero_saree.png" alt="Detail weaving of royal red silk saree" class="story-img parallax-img">
+                        <div class="story-badge">
+                            <span class="badge-num">100+</span>
+                            <span class="badge-label">Hours Per Loom</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="story-text-container reveal-on-scroll">
+                    <span class="section-accent">A Heritage Reimagined</span>
+                    <h2 class="section-title">The Art of Slow Luxury & Authentic Craft</h2>
+                    <p class="story-paragraph">At the heart of Yadhee lies an unwavering dedication to preservation. Every saree we shape is an heirloom, slow-loomed in the historical districts of Kanchipuram and Banaras, taking up to three months of painstaking weaving. Using real silk and verified metallic gold thread, our artisans bind centuries of mythology into each fold.</p>
+                    <p class="story-paragraph">Our jewelry is equally sacred. We forge each neckpiece and jhumka by hand, using raw uncut diamonds (Polki), deep-red rubies, and premium 22k gold, invoking the architectural brilliance of antique Indian temples. This isn't fashion. This is legacy crafted to be passed down through generations.</p>
+                    <div class="story-features">
+                        <div class="feature-item">
+                            <i class="fa-solid fa-certificate gold-text"></i>
+                            <div>
+                                <h4>Silk Mark Certified</h4>
+                                <p>Authentic, pure Mulberry silk of the highest grade.</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fa-solid fa-stamp gold-text"></i>
+                            <div>
+                                <h4>BIS Hallmark Gold</h4>
+                                <p>Every single gemstone and ornament is independently certified.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Curated Product Showcase / Filterable Galleries -->
+    <section class="gallery-section" id="collections">
+        <div class="section-container">
+            <div class="gallery-header text-center reveal-on-scroll">
+                <span class="section-accent">Curated Selections</span>
+                <h2 class="section-title">Our Masterpiece Offerings</h2>
+                <div class="filter-controls">
+                    <button class="filter-btn active" data-filter="all">The Entire Vault</button>
+                    <button class="filter-btn" data-filter="saree">Handwoven Sarees</button>
+                    <button class="filter-btn" data-filter="jewel">Temple & Polki Jewels</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Product Grid -->
+            <div class="product-grid" id="productGrid">
+                <% products.forEach(function(product) { %>
+                <div class="product-card reveal-on-scroll" data-category="<%= product.category %>" data-id="<%= product.id %>">
+                    <div class="product-media-wrapper">
+                        <img src="<%= product.image_url %>" alt="<%= product.name %>" class="product-img">
+                        <div class="card-overlay-actions">
+                            <button class="card-btn quick-view-btn" aria-label="Quick View"><i class="fa-solid fa-eye"></i></button>
+                            <button class="card-btn fav-add-btn" aria-label="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
+                        </div>
+                        <% if (product.stock_quantity === 1) { %>
+                            <span class="product-tag scarcity-tag alert-tag">Only 1 Left</span>
+                        <% } else if (product.stock_quantity === 2) { %>
+                            <span class="product-tag scarcity-tag warning-tag">Rare Find</span>
+                        <% } else if (product.tag) { %>
+                            <span class="product-tag <%= product.category === 'saree' ? 'luxury-tag' : 'bespoke-tag' %>"><%= product.tag %></span>
+                        <% } %>
+                    </div>
+                    <div class="product-details">
+                        <span class="product-type"><%= product.type %></span>
+                        <h3 class="product-name"><%= product.name %></h3>
+                        <div class="price-container">
+                            <span class="price">₹<%= product.price_inr.toLocaleString('en-IN') %></span>
+                            <span class="price-usd">($<%= product.price_usd.toLocaleString() %>)</span>
+                        </div>
+                        <button class="add-to-bag-btn">Acquire <%= product.category === 'saree' ? 'Saree' : 'Jewels' %></button>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lookbook Section (Visual Pairings / Storytelling Carousel) -->
+    <section class="lookbook-section">
+        <div class="section-container">
+            <div class="lookbook-intro text-center reveal-on-scroll">
+                <span class="section-accent">The Cinematic Pairings</span>
+                <h2 class="section-title">The Royal Bridal Lookbook</h2>
+                <p class="lookbook-tagline">How our creative directors envision the royal pairing of heavy-thread luxury silk sarees with temple heritage masterpieces.</p>
+            </div>
+            
+            <div class="lookbook-carousel-container reveal-on-scroll">
+                <div class="lookbook-slider-track" id="lookbookTrack">
+                    <!-- Slide 1 -->
+                    <div class="lookbook-slide">
+                        <div class="slide-visual">
+                            <img src="assets/hero_saree.png" alt="Loom weave details" class="lookbook-img-bg">
+                            <img src="assets/hero_jewel.png" alt="Jewel details" class="lookbook-img-foreground">
+                        </div>
+                        <div class="slide-editorial">
+                            <span class="editorial-chap">CHAPTER I</span>
+                            <h3 class="editorial-title">The Rajkumari Wedding</h3>
+                            <p class="editorial-text">A majestic union of deep crimson silk and intricate temple heavy gold necklaces. Designed to reflect the eternal royal lineage of temple courts during the Chola dynasty. Emitting power, grace, and exquisite beauty.</p>
+                            <div class="editorial-links">
+                                <a href="#collections" class="editorial-link" data-filter="saree">Explore Saree <i class="fa-solid fa-arrow-right-long"></i></a>
+                                <a href="#collections" class="editorial-link" data-filter="jewel">Explore Choker <i class="fa-solid fa-arrow-right-long"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2 -->
+                    <div class="lookbook-slide">
+                        <div class="slide-visual">
+                            <img src="assets/saree_green.png" alt="Loom weave details green" class="lookbook-img-bg">
+                            <img src="assets/jewel_earrings.png" alt="Emerald jhumkas detail" class="lookbook-img-foreground">
+                        </div>
+                        <div class="slide-editorial">
+                            <span class="editorial-chap">CHAPTER II</span>
+                            <h3 class="editorial-title">The Forest Queen</h3>
+                            <p class="editorial-text">Rich emerald and peacock gold brocades met with uncut Polki diamond chandelier earrings and drops. A tribute to the wilderness and high royalty, mimicking pure nature and timeless gold-smithing craft.</p>
+                            <div class="editorial-links">
+                                <a href="#collections" class="editorial-link" data-filter="saree">Explore Saree <i class="fa-solid fa-arrow-right-long"></i></a>
+                                <a href="#collections" class="editorial-link" data-filter="jewel">Explore Jhumkas <i class="fa-solid fa-arrow-right-long"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3 -->
+                    <div class="lookbook-slide">
+                        <div class="slide-visual">
+                            <img src="assets/saree_ivory.png" alt="Ivory and gold weave details" class="lookbook-img-bg">
+                            <img src="assets/jewel_bangles.png" alt="Filigree gold bangles" class="lookbook-img-foreground">
+                        </div>
+                        <div class="slide-editorial">
+                            <span class="editorial-chap">CHAPTER III</span>
+                            <h3 class="editorial-title">Swarna Devata</h3>
+                            <p class="editorial-text">Purity and light embodied. A breathtaking ivory white silk saree draped alongside a magnificent layered collection of gold filigree bangles and intricate detailing. Sophistication in high slow fashion.</p>
+                            <div class="editorial-links">
+                                <a href="#collections" class="editorial-link" data-filter="saree">Explore Saree <i class="fa-solid fa-arrow-right-long"></i></a>
+                                <a href="#collections" class="editorial-link" data-filter="jewel">Explore Bangles <i class="fa-solid fa-arrow-right-long"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lookbook Pagination dots -->
+                <div class="lookbook-dots" id="lookbookDots">
+                    <span class="lookbook-dot active" data-index="0"></span>
+                    <span class="lookbook-dot" data-index="1"></span>
+                    <span class="lookbook-dot" data-index="2"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Bridal Consultation / Atelier Booking Form -->
+    <section class="atelier-section" id="atelier">
+        <div class="section-container">
+            <div class="atelier-grid">
+                <div class="atelier-text reveal-on-scroll">
+                    <span class="section-accent">Bespoke Couture Design</span>
+                    <h2 class="section-title">The Virtual Bespoke Atelier</h2>
+                    <p class="atelier-paragraph">Whether composing your complete bridal trousseau or designing a one-of-a-kind custom temple necklace, Yadhee's team of master weavers and jewelry couturiers are at your service. Let us co-create an authentic piece of hand-woven or hand-forged luxury tailored exactly to your heritage story.</p>
+                    <div class="atelier-contact-info">
+                        <div class="info-block">
+                            <span class="info-label">Direct Atelier Consultation:</span>
+                            <span class="info-val">+91 (44) 4982-9011</span>
+                        </div>
+                        <div class="info-block">
+                            <span class="info-label">Exclusive Email Port:</span>
+                            <span class="info-val">atelier@yadhee.com</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="atelier-form-container reveal-on-scroll">
+                    <form id="atelierForm" class="luxury-form">
+                        <h3 class="form-title">Request Design Appointment</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="clientName">Full Name</label>
+                                <input type="text" id="clientName" required placeholder="Lady / Lord...">
+                            </div>
+                            <div class="form-group">
+                                <label for="clientEmail">Email Portal</label>
+                                <input type="email" id="clientEmail" required placeholder="name@domain.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="interestType">Artisanship Domain</label>
+                            <select id="interestType" required>
+                                <option value="" disabled selected>Select craft focus</option>
+                                <option value="bridal_saree">Bespoke Bridal Saree (Kanchipuram Custom Zari)</option>
+                                <option value="temple_jewelry">Heirloom Temple Jewelry Custom Crafting</option>
+                                <option value="complete_trousseau">Full Trousseau Curation (Saree & Jewels Pairing)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="clientMessage">Design Preferences & Details</label>
+                            <textarea id="clientMessage" rows="4" placeholder="Briefly detail custom motifs, colors, gold weight, or wedding timelines..."></textarea>
+                        </div>
+                        <button type="submit" class="form-submit-btn">Transmit Request <i class="fa-solid fa-arrow-right-long"></i></button>
+                    </form>
+                    <div id="atelierFormSuccess" class="form-success-overlay">
+                        <div class="success-content">
+                            <i class="fa-solid fa-envelope-circle-check gold-text"></i>
+                            <h3>Request Received at Atelier</h3>
+                            <p>An executive design specialist will contact you in the next 12 hours with a bespoke booking confirmation link.</p>
+                            <button id="successClose" class="btn btn-secondary">Close Portal</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Exclusive Heritage Seals / Badges Section -->
+    <section class="trust-seals-section">
+        <div class="section-container">
+            <div class="seals-grid">
+                <div class="seal-card">
+                    <div class="seal-icon-box">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <h3>Insured Global Shipping</h3>
+                    <p>Secured door-to-door courier dispatch with full transit insurance globally.</p>
+                </div>
+                <div class="seal-card">
+                    <div class="seal-icon-box">
+                        <i class="fa-solid fa-ring"></i>
+                    </div>
+                    <h3>Bespoke Custom Fits</h3>
+                    <p>Saree blouse stitching and jewelry resizing customized for you by master tailors.</p>
+                </div>
+                <div class="seal-card">
+                    <div class="seal-icon-box">
+                        <i class="fa-solid fa-hands-holding-child"></i>
+                    </div>
+                    <h3>Artisan Empowerment</h3>
+                    <p>65% of profits go directly back to our loom weavers and gold-smithing artisans.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<%- include('partials/footer') %>

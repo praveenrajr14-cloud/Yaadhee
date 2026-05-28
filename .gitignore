@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Local database (re-seeded automatically on Render)
+*.db
+*.sqlite
+
+# Generated assets (recreated at runtime)
+assets/invoices/
+assets/emails/
+
+# Local dev / backup folders
+static_backup/
+
+# Environment secrets (never commit these)
+.env
+.env.local
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Fly.io (different platform)
+.fly/
+
+# Editor
+.vscode/
+
+# Logs
+*.log

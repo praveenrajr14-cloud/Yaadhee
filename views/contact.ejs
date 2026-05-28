@@ -1,0 +1,111 @@
+<%- include('partials/header', { activePage: 'contact', title: 'Contact Our Salons | Yadhee Luxury Heritage' }) %>
+
+    <!-- Page Banner Header -->
+    <section class="page-title-banner" style="background-image: linear-gradient(rgba(30, 2, 6, 0.85), rgba(30, 2, 6, 0.7)), url('assets/hero_saree.png');">
+        <div class="banner-content text-center">
+            <span class="section-accent">Flagship Boutique Directories</span>
+            <h1 class="page-main-title">Connect With The Atelier</h1>
+            <p class="banner-subtitle">Schedule a private bridal fitting, consult on a custom-drawn jewelry piece, or connect with our patron concierge center.</p>
+        </div>
+    </section>
+
+    <!-- Contact Details & Form Grid -->
+    <section class="atelier-section">
+        <div class="section-container">
+            <div class="atelier-grid">
+                <div class="atelier-text reveal-on-scroll">
+                    <span class="section-accent">Bespoke Couture Design</span>
+                    <h2 class="section-title">The Virtual Bespoke Atelier</h2>
+                    <p class="atelier-paragraph">Whether composing your complete bridal trousseau or designing a one-of-a-kind custom temple necklace, Yadhee's team of master weavers and jewelry couturiers are at your service. Let us co-create an authentic piece of hand-woven or hand-forged luxury tailored exactly to your heritage story.</p>
+                    
+                    <div class="atelier-contact-info">
+                        <div class="info-block">
+                            <span class="info-label">Direct Atelier Consultation:</span>
+                            <span class="info-val">+91 (44) 4982-9011</span>
+                        </div>
+                        <div class="info-block">
+                            <span class="info-label">Exclusive Email Port:</span>
+                            <span class="info-val">atelier@yadhee.com</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="atelier-form-container reveal-on-scroll">
+                    <form id="atelierForm" class="luxury-form">
+                        <h3 class="form-title">Request Design Appointment</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="clientName">Full Name</label>
+                                <input type="text" id="clientName" required placeholder="Lady / Lord...">
+                            </div>
+                            <div class="form-group">
+                                <label for="clientEmail">Email Portal</label>
+                                <input type="email" id="clientEmail" required placeholder="name@domain.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="interestType">Artisanship Domain</label>
+                            <select id="interestType" required>
+                                <option value="" disabled selected>Select craft focus</option>
+                                <option value="bridal_saree">Bespoke Bridal Saree (Kanchipuram Custom Zari)</option>
+                                <option value="temple_jewelry">Heirloom Temple Jewelry Custom Crafting</option>
+                                <option value="complete_trousseau">Full Trousseau Curation (Saree & Jewels Pairing)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="clientMessage">Design Preferences & Details</label>
+                            <textarea id="clientMessage" rows="4" placeholder="Briefly detail custom motifs, colors, gold weight, or wedding timelines..."></textarea>
+                        </div>
+                        <button type="submit" class="form-submit-btn">Transmit Request <i class="fa-solid fa-arrow-right-long"></i></button>
+                    </form>
+                    
+                    <div id="atelierFormSuccess" class="form-success-overlay">
+                        <div class="success-content">
+                            <i class="fa-solid fa-envelope-circle-check gold-text"></i>
+                            <h3>Request Received at Atelier</h3>
+                            <p>An executive design specialist will contact you in the next 12 hours with a bespoke booking confirmation link.</p>
+                            <button id="successClose" class="btn btn-secondary">Close Portal</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- flagships Boutiques Directories Section -->
+    <section class="trust-seals-section" style="background-color: var(--color-white); padding: 8rem 0;">
+        <div class="section-container">
+            <div class="gallery-header text-center reveal-on-scroll" style="margin-bottom: 5rem;">
+                <span class="section-accent">International flagships</span>
+                <h2 class="section-title" style="color: var(--color-crimson-deep);">Our Flagship Salons</h2>
+            </div>
+            
+            <div class="seals-grid">
+                <div class="seal-card reveal-on-scroll">
+                    <div class="seal-icon-box">
+                        <i class="fa-solid fa-hotel"></i>
+                    </div>
+                    <h3 style="color: var(--color-crimson-deep); font-size: 1rem; margin-bottom: 0.5rem;">The Mumbai Atelier</h3>
+                    <p style="color: var(--color-charcoal); line-height: 1.6; font-size: 0.85rem;">Taj Mahal Palace & Towers, Suite 104<br>Colaba Causeway, Mumbai, India<br>Hours: 11:00 AM - 8:00 PM (Prior Registration Required)</p>
+                </div>
+                
+                <div class="seal-card reveal-on-scroll">
+                    <div class="seal-icon-box">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <h3 style="color: var(--color-crimson-deep); font-size: 1rem; margin-bottom: 0.5rem;">The London Salon</h3>
+                    <p style="color: var(--color-charcoal); line-height: 1.6; font-size: 0.85rem;">24 Bruton Place, Mayfair<br>London W1J 6NE, United Kingdom<br>Hours: 10:00 AM - 6:00 PM (By Appointment Only)</p>
+                </div>
+                
+                <div class="seal-card reveal-on-scroll">
+                    <div class="seal-icon-box">
+                        <i class="fa-solid fa-landmark"></i>
+                    </div>
+                    <h3 style="color: var(--color-crimson-deep); font-size: 1rem; margin-bottom: 0.5rem;">The Paris Studio</h3>
+                    <p style="color: var(--color-charcoal); line-height: 1.6; font-size: 0.85rem;">420 Rue Saint-Honoré, First Level<br>75008 Paris, France<br>Hours: 10:00 AM - 7:00 PM (By Appointment Only)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<%- include('partials/footer') %>

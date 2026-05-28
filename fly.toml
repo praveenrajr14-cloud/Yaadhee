@@ -1,0 +1,40 @@
+# Fly.io deployment config for Yadhee Heritage
+# Generated for: Express + SQLite + EJS stack
+
+app = "yadhee-heritage"
+primary_region = "sin"          # Singapore — closest to India
+kill_signal = "SIGINT"
+kill_timeout = "5s"
+
+[build]
+  # Using our custom multi-stage Dockerfile
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  NODE_ENV = "production"
+  DB_PATH = "/data/yadhee.db"    # SQLite database on persistent volume
+  DATA_DIR = "/data"             # Invoice PDFs and email logs on volume
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"   # Stop when no traffic (saves cost)
+  auto_start_machines = true    # Wake up on first request
+  min_machines_running = 0      # Free tier: 0 idle machines
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+# Persistent volume: SQLite data survives deploys & restarts
+[[mounts]]
+  source   = "yadhee_data"
+  destination = "/data"
+  initial_size = "1gb"
+
+# Machine size: shared-cpu-1x is free tier eligible
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

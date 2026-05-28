@@ -1,0 +1,28 @@
+# Render.com deployment configuration for Yadhee Heritage
+# Docs: https://render.com/docs/render-yaml-syntax
+
+services:
+  - type: web
+    name: yadhee-heritage
+    runtime: node
+    region: singapore       # Closest to India
+    plan: free              # Free tier
+
+    # Build phase
+    buildCommand: npm install
+
+    # Start phase
+    startCommand: node server.js
+
+    # Health check endpoint
+    healthCheckPath: /
+
+    # Environment variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000        # Render injects PORT automatically, but being explicit
+
+    # Auto-deploy on every push to main branch
+    autoDeploy: true

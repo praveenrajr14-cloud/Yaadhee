@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'Yadhee - High-end cinematic e-commerce experience featuring luxurious handwoven royal silk sarees and exquisite antique heritage gold jewelry.' %>">
+    <title><%= typeof title !== 'undefined' ? title : 'Yadhee | Royal Handwoven Sarees & Heritage Jewels' %></title>
+    <!-- Fonts: Cormorant Garamond for elegant serifs, Cinzel for brand titles, Montserrat for sleek typography, and Figtree/Merriweather from Madhurika Attires -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&family=Figtree:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+    <!-- FontAwesome for minimal elegant icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Custom Luxury Cursor Ring -->
+    <div id="custom-cursor" class="custom-cursor"></div>
+    <div id="custom-cursor-dot" class="custom-cursor-dot"></div>
+
+    <!-- Top Luxury Announcement Bar -->
+    <div class="announcement-bar">
+        <div class="announcement-slider">
+            <span class="announcement-item"><i class="fa-solid fa-crown"></i> Complimentary Worldwide Insured Shipping & Custom Atelier Fitting</span>
+            <span class="announcement-item"><i class="fa-solid fa-gem"></i> Every Purchase Accompanied by Authenticity & Silk Mark Certifications</span>
+        </div>
+    </div>
+
+    <!-- Elegant Sticky Navigation Header -->
+    <header class="main-header">
+        <div class="nav-container">
+            <!-- Left Navigation Menu Links -->
+            <nav class="nav-links">
+                <a href="/" class="nav-item <%= activePage === 'home' ? 'active' : '' %>">Home</a>
+                <a href="/about" class="nav-item <%= activePage === 'about' ? 'active' : '' %>">Our Story</a>
+                <a href="/new-arrivals" class="nav-item <%= activePage === 'new-arrivals' ? 'active' : '' %>">New Arrivals</a>
+                <a href="/sarees" class="nav-item <%= activePage === 'sarees' ? 'active' : '' %>">Sarees</a>
+                <a href="/jewels" class="nav-item <%= activePage === 'jewels' ? 'active' : '' %>">Jewels</a>
+                <a href="/contact" class="nav-item <%= activePage === 'contact' ? 'active' : '' %>">Contact</a>
+            </nav>
+
+            <!-- Brand Logo in Center -->
+            <div class="brand-logo-container">
+                <a href="/" class="brand-logo">
+                    <span class="brand-title">YADHEE</span>
+                    <span class="brand-subtitle">HERITAGE OF WEAVES & JEWELS</span>
+                </a>
+            </div>
+
+            <!-- Right Actions Bar -->
+            <div class="nav-actions">
+                <button class="action-btn search-toggle" id="searchToggle" aria-label="Search Collection">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn favorites-btn" id="favsToggle" aria-label="Wishlist">
+                    <i class="fa-regular fa-heart"></i>
+                    <span class="action-badge favs-count">0</span>
+                </button>
+                <button class="action-btn bag-btn" id="cartToggle" aria-label="Shopping Bag">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="action-badge cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Interactive Sliding Search Bar (Appears on clicking search icon) -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search the weaves of Yadhee..." autocomplete="off">
+            <button class="search-submit-btn"><i class="fa-solid fa-arrow-right-long"></i></button>
+            <button class="search-close" id="searchClose"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="search-suggestions">
+            <span>Popular:</span>
+            <a href="/sarees" class="suggested-link">Kanchipuram Silk</a>
+            <a href="/jewels" class="suggested-link">Temple Chokers</a>
+            <a href="/jewels" class="suggested-link">Polki Jhumkas</a>
+        </div>
+    </div>

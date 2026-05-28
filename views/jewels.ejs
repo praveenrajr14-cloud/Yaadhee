@@ -1,0 +1,61 @@
+<%- include('partials/header', { activePage: 'jewels', title: 'The Jewels Collection | Yadhee Luxury Heritage' }) %>
+
+    <!-- Page Banner Header -->
+    <section class="page-title-banner" style="background-image: linear-gradient(rgba(30, 2, 6, 0.85), rgba(30, 2, 6, 0.7)), url('assets/hero_jewel.png');">
+        <div class="banner-content text-center">
+            <span class="section-accent">Generational Metal Repoussé Craft</span>
+            <h1 class="page-main-title">The Heritage Sacred Jewels</h1>
+            <p class="banner-subtitle">Explore solid 22k gold heirloom necklaces, chandelier jhumkas, and bangles hand-hammered and set with rare gemstones.</p>
+        </div>
+    </section>
+
+    <!-- Filterable Product Grid -->
+    <section class="gallery-section">
+        <div class="section-container">
+            <div class="gallery-header text-center reveal-on-scroll">
+                <span class="section-accent">The Ornaments Vault</span>
+                <h2 class="section-title">Acquire Antique Treasures</h2>
+                
+                <!-- Specialized Sub-category Filter Buttons -->
+                <div class="filter-controls">
+                    <button class="filter-btn active" data-filter="all">All Heritage Ornaments</button>
+                    <button class="filter-btn" data-filter="temple">Temple Gold</button>
+                    <button class="filter-btn" data-filter="polki">Jadau Polki Gems</button>
+                    <button class="filter-btn" data-filter="bangles">Filigree Bangles</button>
+                </div>
+            </div>
+
+            <!-- Custom Jewels Grid -->
+            <div class="product-grid" id="productGrid">
+                <% products.forEach(function(product) { %>
+                <div class="product-card reveal-on-scroll" data-category="<%= product.subcategory %>" data-id="<%= product.id %>">
+                    <div class="product-media-wrapper">
+                        <img src="<%= product.image_url %>" alt="<%= product.name %>" class="product-img">
+                        <div class="card-overlay-actions">
+                            <button class="card-btn quick-view-btn" aria-label="Quick View"><i class="fa-solid fa-eye"></i></button>
+                            <button class="card-btn fav-add-btn" aria-label="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
+                        </div>
+                        <% if (product.stock_quantity === 1) { %>
+                            <span class="product-tag scarcity-tag alert-tag">Only 1 Left</span>
+                        <% } else if (product.stock_quantity === 2) { %>
+                            <span class="product-tag scarcity-tag warning-tag">Rare Find</span>
+                        <% } else if (product.tag) { %>
+                            <span class="product-tag bespoke-tag"><%= product.tag %></span>
+                        <% } %>
+                    </div>
+                    <div class="product-details">
+                        <span class="product-type"><%= product.type %></span>
+                        <h3 class="product-name"><%= product.name %></h3>
+                        <div class="price-container">
+                            <span class="price">₹<%= product.price_inr.toLocaleString('en-IN') %></span>
+                            <span class="price-usd">($<%= product.price_usd.toLocaleString() %>)</span>
+                        </div>
+                        <button class="add-to-bag-btn">Acquire Jewels</button>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+    </section>
+
+<%- include('partials/footer') %>
