@@ -354,9 +354,16 @@ body.hovering-interactive .custom-cursor-dot {
     text-transform: uppercase;
 }
 
-.brand-logo:hover .brand-title {
-    color: var(--color-gold);
-    transform: scale(1.02);
+.brand-logo-img {
+    height: 52px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 0.3rem;
+    transition: var(--transition-smooth);
+}
+
+.brand-logo:hover .brand-logo-img {
+    transform: scale(1.05);
 }
 
 /* Actions Icon Bar */

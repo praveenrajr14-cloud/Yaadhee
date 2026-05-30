@@ -41,10 +41,17 @@ function generateInvoicePDF(order, items) {
             const colorGrayLight = '#DDD9D2';
 
             // 1. Header Branding Centered
-            doc.font('Times-Bold')
-               .fontSize(28)
-               .fillColor(colorCrimson)
-               .text('Y A D H E E', { align: 'center' });
+            const logoPath = path.join(dataDir, 'logo.jpg');
+            if (fs.existsSync(logoPath)) {
+                // Centering a 120 width image: (595 - 120) / 2 = 237.5
+                doc.image(logoPath, 237.5, 30, { width: 120 });
+                doc.y = 80;
+            } else {
+                doc.font('Times-Bold')
+                   .fontSize(28)
+                   .fillColor(colorCrimson)
+                   .text('Y A D H E E', { align: 'center' });
+            }
 
             doc.font('Times-Roman')
                .fontSize(9)
@@ -336,7 +343,9 @@ async function sendInvoiceEmail(order, invoicePath) {
     <body>
         <div class="wrapper">
             <div class="header">
-                <div class="logo">YADHEE</div>
+                <div class="logo">
+                    <img src="https://yaadhee-1.onrender.com/assets/logo.jpg" alt="YADHEE" style="height: 50px; width: auto; display: block; margin: 0 auto 10px auto; object-fit: contain;">
+                </div>
                 <div class="subtitle">Heritage of Weaves & Jewels</div>
             </div>
             

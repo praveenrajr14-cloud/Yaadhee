@@ -609,7 +609,7 @@ app.post('/api/admin/abandoned-cart/recover/:id', checkAdminAuth, (req, res) => 
             <body>
                 <div class="email-card">
                     <div class="brand">
-                        <h2 style="margin:0; letter-spacing:0.15em;">YADHEE</h2>
+                        <img src="https://yaadhee-1.onrender.com/assets/logo.jpg" alt="YADHEE" style="height: 50px; width: auto; display: block; margin: 0 auto 10px auto; object-fit: contain;">
                         <p style="margin:5px 0 0 0; font-size:0.6rem; color:#8E877D; letter-spacing:0.05em; text-transform:uppercase;">Weaves of Antiquity, Gold of Gods</p>
                     </div>
                     <h3 class="title">Secured Acquisitions Recovery Notice</h3>
