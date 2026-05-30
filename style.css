@@ -335,12 +335,13 @@ body.hovering-interactive .custom-cursor-dot {
 }
 
 .brand-title {
-    font-family: var(--font-accent);
-    font-size: 2.2rem;
-    font-weight: 700;
-    letter-spacing: 0.3em;
+    font-family: 'Pinyon Script', cursive;
+    font-size: 3.5rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
     color: var(--color-crimson-deep);
-    line-height: 1;
+    line-height: 1.1;
     margin-bottom: 0.2rem;
     transition: var(--transition-smooth);
 }
@@ -354,15 +355,8 @@ body.hovering-interactive .custom-cursor-dot {
     text-transform: uppercase;
 }
 
-.brand-logo-img {
-    height: 52px;
-    width: auto;
-    object-fit: contain;
-    margin-bottom: 0.3rem;
-    transition: var(--transition-smooth);
-}
-
-.brand-logo:hover .brand-logo-img {
+.brand-logo:hover .brand-title {
+    color: var(--color-gold);
     transform: scale(1.05);
 }
 
@@ -2037,12 +2031,13 @@ body.hovering-interactive .custom-cursor-dot {
 }
 
 .footer-brand-title {
-    font-family: var(--font-accent);
-    font-size: 2.2rem;
-    font-weight: 700;
-    letter-spacing: 0.35em;
-    color: var(--color-gold-pale);
-    margin-bottom: 0.5rem;
+    font-family: 'Pinyon Script', cursive;
+    font-size: 3.5rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--color-gold-bright);
+    margin-bottom: 0.2rem;
 }
 
 .footer-brand-tagline {
