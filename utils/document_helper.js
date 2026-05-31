@@ -41,16 +41,16 @@ function generateInvoicePDF(order, items) {
             const colorGrayLight = '#DDD9D2';
 
             // 1. Header Branding Centered (Text Font Only)
-            doc.font('Times-Bold')
-               .fontSize(26)
+            doc.font('Times-BoldItalic')
+               .fontSize(28)
                .fillColor(colorCrimson)
-               .text('YADHEE', { align: 'center', characterSpacing: 2 });
+               .text('Yadhee', { align: 'center', characterSpacing: 1 });
             doc.y = 65;
 
-            doc.font('Times-Roman')
+            doc.font('Times-Italic')
                .fontSize(9)
                .fillColor(colorGold)
-               .text('HERITAGE OF WEAVES & JEWELS', { align: 'center', characterSpacing: 2 })
+               .text('HERITAGE OF WEAVES & JEWELS', { align: 'center', characterSpacing: 1.5 })
                .moveDown(0.5);
 
             // Elegant Gold Divider Bar
@@ -260,6 +260,9 @@ async function sendInvoiceEmail(order, invoicePath) {
     <html>
     <head>
         <meta charset="utf-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,600&display=swap" rel="stylesheet">
         <style>
             body {
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -282,10 +285,11 @@ async function sendInvoiceEmail(order, invoicePath) {
                 margin-bottom: 30px;
             }
             .logo {
-                font-family: Georgia, serif;
-                font-size: 32px;
-                font-weight: bold;
-                letter-spacing: 0.2em;
+                font-family: 'Cormorant Garamond', Georgia, serif;
+                font-size: 36px;
+                font-style: italic;
+                font-weight: 300;
+                letter-spacing: 0.05em;
                 color: #7A0C1E;
                 margin: 0;
             }
@@ -336,7 +340,7 @@ async function sendInvoiceEmail(order, invoicePath) {
     </head>
     <body>
             <div class="header">
-                <div class="logo" style="font-family: Georgia, serif; font-size: 32px; font-weight: bold; letter-spacing: 0.25em; color: #7A0C1E; text-transform: uppercase; margin-bottom: 5px; text-align: center;">Yadhee</div>
+                <div class="logo" style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-style: italic; font-weight: 300; letter-spacing: 0.05em; color: #7A0C1E; text-align: center; margin: 0 auto 5px auto;">Yadhee</div>
                 <div class="subtitle">Heritage of Weaves & Jewels</div>
             </div>
             
