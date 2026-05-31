@@ -1,11 +1,11 @@
-<%- include('partials/header', { activePage: 'sarees', title: 'The Sarees Collection | Yadhee Luxury Heritage' }) %>
+<%- include('partials/header', { activePage: 'bestsellers', title: 'Best Sellers | Yadhee Luxury Heritage' }) %>
 
     <!-- Page Banner Header -->
     <section class="page-title-banner" style="background-image: linear-gradient(rgba(30, 2, 6, 0.85), rgba(30, 2, 6, 0.7)), url('assets/hero_saree.png');">
         <div class="banner-content text-center">
-            <span class="section-accent">Generational Loom Collections</span>
-            <h1 class="page-main-title">The Royal Handwoven Sarees</h1>
-            <p class="banner-subtitle">Explore pure silk fabrics meticulously handwoven with precious metallic gold threads by legendary master artisans.</p>
+            <span class="section-accent">Most Popular Selections</span>
+            <h1 class="page-main-title">Best Sellers</h1>
+            <p class="banner-subtitle">Explore our most popular, limited-edition handwoven sarees and heritage antique jewelry.</p>
         </div>
     </section>
 
@@ -13,22 +13,13 @@
     <section class="gallery-section">
         <div class="section-container">
             <div class="gallery-header text-center reveal-on-scroll">
-                <span class="section-accent">Sarees Collection</span>
-                <h2 class="section-title">Shop Heirloom Silks</h2>
-                
-                <!-- Specialized Sub-category Filter Buttons -->
-                <div class="filter-controls">
-                    <button class="filter-btn active" data-filter="all">All Sarees</button>
-                    <button class="filter-btn" data-filter="kanchipuram">Kanchipuram Silks</button>
-                    <button class="filter-btn" data-filter="banarasi">Banarasi Satins</button>
-                    <button class="filter-btn" data-filter="organza">Organzas</button>
-                </div>
+                <span class="section-accent">Highly Valued Masterpieces</span>
+                <h2 class="section-title">Shop Our Best Sellers</h2>
             </div>
 
-            <!-- Custom Saree Grid -->
-            <div class="product-grid" id="productGrid">
+            <div class="product-grid">
                 <% products.forEach(function(product) { %>
-                <div class="product-card reveal-on-scroll" data-category="<%= product.subcategory %>" data-id="<%= product.id %>">
+                <div class="product-card reveal-on-scroll" data-category="<%= product.category %>" data-id="<%= product.id %>">
                     <div class="product-media-wrapper">
                         <img src="<%= product.image_url %>" alt="<%= product.name %>" class="product-img">
                         <div class="card-overlay-actions">

@@ -40,18 +40,12 @@ function generateInvoicePDF(order, items) {
             const colorCharcoal = '#2A2425';
             const colorGrayLight = '#DDD9D2';
 
-            // 1. Header Branding Centered
-            const logoPath = path.join(dataDir, 'logo.jpg');
-            if (fs.existsSync(logoPath)) {
-                // Centering a 120 width image: (595 - 120) / 2 = 237.5
-                doc.image(logoPath, 237.5, 30, { width: 120 });
-                doc.y = 80;
-            } else {
-                doc.font('Times-Bold')
-                   .fontSize(28)
-                   .fillColor(colorCrimson)
-                   .text('Y A D H E E', { align: 'center' });
-            }
+            // 1. Header Branding Centered (Text Font Only)
+            doc.font('Times-Bold')
+               .fontSize(26)
+               .fillColor(colorCrimson)
+               .text('YADHEE', { align: 'center', characterSpacing: 2 });
+            doc.y = 65;
 
             doc.font('Times-Roman')
                .fontSize(9)
@@ -83,7 +77,7 @@ function generateInvoicePDF(order, items) {
                .fontSize(9)
                .text(`Email: ${order.customer_email}`, 50, metadataStartY + 30)
                .text(`Phone: ${order.customer_phone}`, 50, metadataStartY + 42)
-               .text('Shipping Transit Address:', 50, metadataStartY + 55)
+               .text('Shipping Address:', 50, metadataStartY + 55)
                .font('Helvetica-Oblique')
                .text(order.shipping_address, 50, metadataStartY + 67, { width: 230 });
 
@@ -91,7 +85,7 @@ function generateInvoicePDF(order, items) {
             doc.font('Helvetica-Bold')
                .fontSize(10)
                .fillColor(colorGold)
-               .text('SOVEREIGN RECORD:', 330, metadataStartY)
+               .text('ORDER SUMMARY:', 330, metadataStartY)
                .font('Helvetica-Bold')
                .fontSize(10)
                .fillColor(colorCharcoal)
@@ -100,7 +94,7 @@ function generateInvoicePDF(order, items) {
                .fontSize(9)
                .text(`Order Date: ${new Date(order.created_at || Date.now()).toLocaleString()}`, 330, metadataStartY + 30)
                .text(`Status: Paid & Verified`, 330, metadataStartY + 42)
-               .text(`Insurance Code: YDH-REG-2026-${orderId}`, 330, metadataStartY + 54);
+               .text(`Order Code: YDH-ORD-2026-${orderId}`, 330, metadataStartY + 54);
 
             doc.moveDown(7.5);
 
@@ -164,9 +158,9 @@ function generateInvoicePDF(order, items) {
             doc.font('Helvetica-Oblique')
                .fontSize(8)
                .fillColor(colorGold)
-               .text('Sovereign Luxury Protocol Applied.', 50, summaryStartY)
+               .text('Premium Packaging & Shipping Included.', 50, summaryStartY)
                .text('All prices inclusive of custom protective packaging, velvet box casings,', 50, summaryStartY + 12)
-               .text('and fully insured overnight courier transport registry.', 50, summaryStartY + 22);
+               .text('and fully insured express shipping.', 50, summaryStartY + 22);
 
             // Right summary column: Math and subtotals
             const taxRate = 0.18; // 18% Luxury GST
@@ -227,12 +221,12 @@ function generateInvoicePDF(order, items) {
             doc.font('Times-Italic')
                .fontSize(9)
                .fillColor(colorGold)
-               .text("Thank you for patronizing Yadhee's heritage weaves and jewels.", 50, 725, { align: 'center' });
+               .text("Thank you for shopping at Yadhee.", 50, 725, { align: 'center' });
 
             doc.font('Helvetica')
                .fontSize(7)
                .fillColor('#8E877D')
-               .text('Yadhee Atelier Udaipur Corridor • Royal Courier Dispatch Unit • support@yadhee.com', 50, 740, { align: 'center' });
+               .text('Yadhee Support • support@yadhee.com', 50, 740, { align: 'center' });
 
             doc.end();
 
@@ -341,37 +335,35 @@ async function sendInvoiceEmail(order, invoicePath) {
         </style>
     </head>
     <body>
-        <div class="wrapper">
             <div class="header">
-                <div class="logo">
-                    <img src="https://yaadhee-1.onrender.com/assets/logo.jpg" alt="YADHEE" style="height: 50px; width: auto; display: block; margin: 0 auto 10px auto; object-fit: contain;">
-                </div>
+                <div class="logo" style="font-family: Georgia, serif; font-size: 32px; font-weight: bold; letter-spacing: 0.25em; color: #7A0C1E; text-transform: uppercase; margin-bottom: 5px; text-align: center;">Yadhee</div>
                 <div class="subtitle">Heritage of Weaves & Jewels</div>
             </div>
             
-            <div class="title">Sovereign Dispatch Confirmed</div>
+            <div class="title">Order Confirmed</div>
             
-            <p>Esteemed <strong>${order.customer_name}</strong>,</p>
+            <p>Dear <strong>${order.customer_name}</strong>,</p>
             
-            <p>It is our distinct honor to inform you that your secure transaction has successfully passed validation in our vaults. Our master artisans are preparing your selected pieces for courier delivery.</p>
+            <p>Thank you for your order! We have received your payment and are preparing your items for delivery.</p>
             
             <div class="order-meta">
-                <strong>Dispatch Reference:</strong> YDH-2026-INV-${orderId}<br>
-                <strong>Patron Coordinates:</strong> ${order.customer_email} | ${order.customer_phone}<br>
-                <strong>Insured Transit Address:</strong> ${order.shipping_address}<br>
-                <strong>Total Value:</strong> ₹${order.total_price_inr.toLocaleString('en-IN')} (approx. $${order.total_price_usd.toLocaleString()} USD)
+                <strong>Order ID:</strong> YDH-2026-INV-${orderId}<br>
+                <strong>Contact Email:</strong> ${order.customer_email}<br>
+                <strong>Phone Number:</strong> ${order.customer_phone}<br>
+                <strong>Shipping Address:</strong> ${order.shipping_address}<br>
+                <strong>Total Price:</strong> ₹${order.total_price_inr.toLocaleString('en-IN')} (approx. $${order.total_price_usd.toLocaleString()} USD)
             </div>
             
-            <p>For your records, we have compiled and securely sealed your <strong>official PDF purchase invoice</strong>. You will find it attached directly to this dispatch notification.</p>
+            <p>For your records, we have attached your official PDF invoice to this email.</p>
             
-            <p>Should your bespoke selections require customization adjustments or custom stitching, please schedule a private design consultation in our Bespoke Atelier Registry at your convenience.</p>
+            <p>If you have any questions or require custom stitching, please contact our support team at your convenience.</p>
             
-            <p class="signature">With warm regards from our loom to your legacy,</p>
-            <p style="font-weight: bold; color: #7A0C1E; margin-top: 5px;">The Curators of Yadhee</p>
+            <p class="signature">Best regards,</p>
+            <p style="font-weight: bold; color: #7A0C1E; margin-top: 5px;">The Yadhee Team</p>
             
             <div class="footer">
-                Yadhee Royal Heritage Atelier Udaipur Corridor • Sovereign Registry Division<br>
-                This is a secured automated receipt transaction message.
+                Yadhee Support • Yadhee Team<br>
+                This is an automated receipt email.
             </div>
         </div>
     </body>

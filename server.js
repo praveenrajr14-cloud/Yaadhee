@@ -44,21 +44,51 @@ function getDbConnection() {
     const db = new sqlite3.Database(DB_PATH);
     db.run("ALTER TABLE products ADD COLUMN stock_quantity INTEGER DEFAULT 5", [], (err) => {
         db.run("ALTER TABLE orders ADD COLUMN invoice_path TEXT", [], (err) => {
-            db.run(`
-                CREATE TABLE IF NOT EXISTS abandoned_carts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    customer_name TEXT,
-                    customer_email TEXT,
-                    customer_phone TEXT,
-                    shipping_address TEXT,
-                    cart_data TEXT,
-                    total_price_inr INTEGER,
-                    total_price_usd INTEGER,
-                    recovered INTEGER DEFAULT 0,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            `, [], (err) => {
-                db.close();
+            db.run("ALTER TABLE orders ADD COLUMN user_id INTEGER", [], (err) => {
+                db.run("ALTER TABLE orders ADD COLUMN payment_txn_id TEXT", [], (err) => {
+                    db.run("ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'Success'", [], (err) => {
+                        db.run(`
+                            CREATE TABLE IF NOT EXISTS users (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                username TEXT UNIQUE NOT NULL,
+                                email TEXT UNIQUE NOT NULL,
+                                password_hash TEXT NOT NULL,
+                                phone TEXT,
+                                address TEXT,
+                                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                            )
+                        `, [], (err) => {
+                            db.run(`
+                                CREATE TABLE IF NOT EXISTS carts (
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    user_id INTEGER NOT NULL,
+                                    product_id TEXT NOT NULL,
+                                    quantity INTEGER DEFAULT 1,
+                                    FOREIGN KEY (user_id) REFERENCES users(id),
+                                    FOREIGN KEY (product_id) REFERENCES products(id),
+                                    UNIQUE(user_id, product_id)
+                                )
+                            `, [], (err) => {
+                                db.run(`
+                                    CREATE TABLE IF NOT EXISTS abandoned_carts (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        customer_name TEXT,
+                                        customer_email TEXT,
+                                        customer_phone TEXT,
+                                        shipping_address TEXT,
+                                        cart_data TEXT,
+                                        total_price_inr INTEGER,
+                                        total_price_usd INTEGER,
+                                        recovered INTEGER DEFAULT 0,
+                                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                                    )
+                                `, [], (err) => {
+                                    db.close();
+                                });
+                            });
+                        });
+                    });
+                });
             });
         });
     });
@@ -98,6 +128,7 @@ app.use(express.static(__dirname));
 app.use((req, res, next) => {
     res.locals.whatsappPhone = config.WHATSAPP_PHONE;
     res.locals.lowStockThreshold = config.LOW_STOCK_THRESHOLD;
+    res.locals.user = req.session.user || null;
     next();
 });
 
@@ -197,6 +228,25 @@ app.get('/new-arrivals', (req, res) => {
     });
 });
 
+// Best Sellers catalog
+app.get('/bestsellers', (req, res) => {
+    const db = getDbConnection();
+    db.all("SELECT * FROM products WHERE is_active = 1 AND (tag LIKE '%Bestseller%' OR tag LIKE '%Masterpiece%')", [], (err, products) => {
+        db.close();
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Internal Server Error");
+        }
+        
+        const parsedProducts = products.map(p => ({
+            ...p,
+            specs: JSON.parse(p.specs || '{}')
+        }));
+
+        res.render('bestsellers', { products: parsedProducts });
+    });
+});
+
 // Our Story page
 app.get('/about', (req, res) => {
     res.render('about');
@@ -205,6 +255,363 @@ app.get('/about', (req, res) => {
 // Contact page
 app.get('/contact', (req, res) => {
     res.render('contact');
+});
+
+
+// -------------------------------------------------------------
+// USER / PATRON AUTHENTICATION ROUTES
+// -------------------------------------------------------------
+
+// Login GET
+app.get('/login', (req, res) => {
+    if (req.session.user) {
+        return res.redirect('/');
+    }
+    res.render('login', { error: null });
+});
+
+// Login POST
+app.post('/login', (req, res) => {
+    const { usernameOrEmail, password } = req.body;
+    if (!usernameOrEmail || !password) {
+        return res.render('login', { error: "Please enter all credentials." });
+    }
+    const db = getDbConnection();
+    db.get('SELECT * FROM users WHERE username = ? OR email = ?', [usernameOrEmail, usernameOrEmail], (err, user) => {
+        db.close();
+        if (err) {
+            return res.render('login', { error: "Security check error." });
+        }
+        if (!user) {
+            return res.render('login', { error: "Patron details not found." });
+        }
+        if (bcrypt.compareSync(password, user.password_hash)) {
+            req.session.user = {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                phone: user.phone || '',
+                address: user.address || ''
+            };
+            return res.redirect('/');
+        } else {
+            return res.render('login', { error: "Invalid password credentials." });
+        }
+    });
+});
+
+// Register GET
+app.get('/register', (req, res) => {
+    if (req.session.user) {
+        return res.redirect('/');
+    }
+    res.render('register', { error: null });
+});
+
+// Register POST
+app.post('/register', (req, res) => {
+    const { username, email, password, phone, address } = req.body;
+    if (!username || !email || !password) {
+        return res.render('register', { error: "Please fill in all mandatory fields." });
+    }
+    const db = getDbConnection();
+    db.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email], (err, existingUser) => {
+        if (err) {
+            db.close();
+            return res.render('register', { error: "Registration database error." });
+        }
+        if (existingUser) {
+            db.close();
+            return res.render('register', { error: "Patron username or email already registered." });
+        }
+
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+
+        db.run(`
+            INSERT INTO users (username, email, password_hash, phone, address)
+            VALUES (?, ?, ?, ?, ?)
+        `, [username, email, hashedPassword, phone || '', address || ''], function (err) {
+            db.close();
+            if (err) {
+                return res.render('register', { error: "Failed to record credentials." });
+            }
+            req.session.user = {
+                id: this.lastID,
+                username: username,
+                email: email,
+                phone: phone || '',
+                address: address || ''
+            };
+            return res.redirect('/');
+        });
+    });
+});
+
+// Logout
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+});
+
+
+// -------------------------------------------------------------
+// USER VAULT, PROFILE, AND SECURE INVOICE ROUTES
+// -------------------------------------------------------------
+
+// Patron Vault (My Account & Order History) GET
+app.get('/vault', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    
+    const db = getDbConnection();
+    // Get user details to refresh session if updated
+    db.get("SELECT * FROM users WHERE id = ?", [req.session.user.id], (err, userRow) => {
+        if (err || !userRow) {
+            db.close();
+            return res.redirect('/logout');
+        }
+        
+        // Update session info
+        req.session.user = {
+            id: userRow.id,
+            username: userRow.username,
+            email: userRow.email,
+            phone: userRow.phone || '',
+            address: userRow.address || ''
+        };
+        
+        // Get user orders with items and payment details
+        db.all("SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC", [req.session.user.id], (err, orders) => {
+            if (err) {
+                db.close();
+                console.error("Error fetching orders:", err);
+                return res.status(500).send("Database Error");
+            }
+            
+            if (orders.length === 0) {
+                db.close();
+                return res.render('vault', { user: req.session.user, orders: [], activePage: 'vault', title: 'My Account | Yadhee' });
+            }
+            
+            // Map order items for each order
+            const orderIds = orders.map(o => o.id);
+            const placeholders = orderIds.map(() => '?').join(',');
+            
+            db.all(`
+                SELECT oi.*, p.name, p.image_url, p.type, p.category 
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id IN (${placeholders})
+            `, orderIds, (err, items) => {
+                db.close();
+                if (err) {
+                    console.error("Error fetching order items:", err);
+                    return res.status(500).send("Database Error");
+                }
+                
+                // Group items by order_id
+                const ordersWithItems = orders.map(order => {
+                    const orderItems = items.filter(item => item.order_id === order.id);
+                    return {
+                        ...order,
+                        items: orderItems
+                    };
+                });
+                
+                res.render('vault', { 
+                    user: req.session.user, 
+                    orders: ordersWithItems, 
+                    activePage: 'vault', 
+                    title: 'My Account | Yadhee' 
+                });
+            });
+        });
+    });
+});
+
+// Update Profile POST
+app.post('/vault/update', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: "Unauthorized access." });
+    }
+    const { phone, address } = req.body;
+    const db = getDbConnection();
+    db.run("UPDATE users SET phone = ?, address = ? WHERE id = ?", [phone || '', address || '', req.session.user.id], (err) => {
+        db.close();
+        if (err) {
+            return res.status(500).json({ error: "Failed to update profile archives." });
+        }
+        // Success
+        req.session.user.phone = phone || '';
+        req.session.user.address = address || '';
+        res.json({ success: true });
+    });
+});
+
+// Secure Patron Invoice Download GET
+app.get('/orders/invoice/:id', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    const orderId = req.params.id;
+    const db = getDbConnection();
+    db.get("SELECT invoice_path, user_id FROM orders WHERE id = ?", [orderId], (err, row) => {
+        db.close();
+        if (err || !row) {
+            return res.status(404).send("Invoice not found in the archives.");
+        }
+        if (row.user_id !== req.session.user.id) {
+            return res.status(403).send("You are not authorized to access this invoice.");
+        }
+        if (!row.invoice_path) {
+            return res.status(404).send("Invoice file has not been compiled yet.");
+        }
+        const absolutePath = path.join(__dirname, row.invoice_path);
+        if (fs.existsSync(absolutePath)) {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `inline; filename="YDH-Invoice-${orderId}.pdf"`);
+            return res.sendFile(absolutePath);
+        } else {
+            return res.status(404).send("Invoice file was not found on our secure disks.");
+        }
+    });
+});
+
+
+// -------------------------------------------------------------
+// PERSISTENT CART REST APIS
+// -------------------------------------------------------------
+
+// Fetch database cart
+app.get('/api/cart', (req, res) => {
+    if (!req.session.user) {
+        return res.json([]);
+    }
+    const db = getDbConnection();
+    db.all("SELECT product_id AS id, quantity AS qty FROM carts WHERE user_id = ?", [req.session.user.id], (err, rows) => {
+        db.close();
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows || []);
+    });
+});
+
+// Upsert database cart item (check-and-insert/update pattern)
+app.post('/api/cart', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+    const { productId, quantity } = req.body;
+    if (!productId || quantity === undefined) {
+        return res.status(400).json({ error: "Product ID and quantity required." });
+    }
+    
+    const db = getDbConnection();
+    db.get("SELECT id FROM carts WHERE user_id = ? AND product_id = ?", [req.session.user.id, productId], (err, row) => {
+        if (err) {
+            db.close();
+            return res.status(500).json({ error: err.message });
+        }
+        if (row) {
+            db.run("UPDATE carts SET quantity = ? WHERE id = ?", [quantity, row.id], (err) => {
+                db.close();
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({ success: true });
+            });
+        } else {
+            db.run("INSERT INTO carts (user_id, product_id, quantity) VALUES (?, ?, ?)", [req.session.user.id, productId, quantity], (err) => {
+                db.close();
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({ success: true });
+            });
+        }
+    });
+});
+
+// Delete database cart item
+app.delete('/api/cart/:productId', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    const db = getDbConnection();
+    db.run("DELETE FROM carts WHERE user_id = ? AND product_id = ?", [req.session.user.id, req.params.productId], (err) => {
+        db.close();
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ success: true });
+    });
+});
+
+// Sync and merge LocalStorage cart to database on login
+app.post('/api/cart/sync', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    const { cart } = req.body; // array of { id, qty }
+    if (!cart || !Array.isArray(cart)) {
+        return res.status(400).json({ error: "Cart array required." });
+    }
+    
+    const db = getDbConnection();
+    db.serialize(() => {
+        db.run("BEGIN TRANSACTION");
+        
+        let completed = 0;
+        let hasError = false;
+        
+        if (cart.length === 0) {
+            db.run("COMMIT", () => {
+                db.all("SELECT product_id AS id, quantity AS qty FROM carts WHERE user_id = ?", [req.session.user.id], (err, rows) => {
+                    db.close();
+                    res.json(rows || []);
+                });
+            });
+            return;
+        }
+        
+        cart.forEach(item => {
+            db.get("SELECT id, quantity FROM carts WHERE user_id = ? AND product_id = ?", [req.session.user.id, item.id], (err, row) => {
+                if (err) {
+                    hasError = true;
+                    checkDone();
+                } else if (row) {
+                    const newQty = row.quantity + item.qty;
+                    db.run("UPDATE carts SET quantity = ? WHERE id = ?", [newQty, row.id], (err) => {
+                        if (err) hasError = true;
+                        checkDone();
+                    });
+                } else {
+                    db.run("INSERT INTO carts (user_id, product_id, quantity) VALUES (?, ?, ?)", [req.session.user.id, item.id, item.qty], (err) => {
+                        if (err) hasError = true;
+                        checkDone();
+                    });
+                }
+            });
+        });
+        
+        function checkDone() {
+            completed++;
+            if (completed === cart.length) {
+                if (hasError) {
+                    db.run("ROLLBACK", () => {
+                        db.close();
+                        res.status(500).json({ error: "Failed to merge cart items." });
+                    });
+                } else {
+                    db.run("COMMIT", () => {
+                        db.all("SELECT product_id AS id, quantity AS qty FROM carts WHERE user_id = ?", [req.session.user.id], (err, rows) => {
+                            db.close();
+                            res.json(rows || []);
+                        });
+                    });
+                }
+            }
+        }
+    });
 });
 
 
@@ -346,10 +753,14 @@ app.post('/api/checkout', (req, res) => {
                 db.serialize(() => {
                     db.run("BEGIN TRANSACTION");
 
+                    const userId = req.session.user ? req.session.user.id : null;
+                    const txnId = paymentRes.transactionId;
+                    const payStatus = 'Success';
+
                     db.run(`
-                        INSERT INTO orders (customer_name, customer_email, customer_phone, shipping_address, total_price_inr, total_price_usd)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                    `, [name, email, phone, address, finalTotalINR, finalTotalUSD], function (err) {
+                        INSERT INTO orders (customer_name, customer_email, customer_phone, shipping_address, total_price_inr, total_price_usd, user_id, payment_txn_id, payment_status)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [name, email, phone, address, finalTotalINR, finalTotalUSD, userId, txnId, payStatus], function (err) {
                         if (err) {
                             db.run("ROLLBACK");
                             db.close();
@@ -389,6 +800,14 @@ app.post('/api/checkout', (req, res) => {
                                         dbAC.run("UPDATE abandoned_carts SET recovered = 2 WHERE customer_email = ?", [email], (err) => {
                                             dbAC.close();
                                         });
+
+                                        // Clear the persistent database cart for logged-in user
+                                        if (userId) {
+                                            const dbCartClear = new sqlite3.Database(DB_PATH);
+                                            dbCartClear.run("DELETE FROM carts WHERE user_id = ?", [userId], (err) => {
+                                                dbCartClear.close();
+                                            });
+                                        }
                                     });
                                     return res.json({ success: true, orderId: orderId });
                                 }
@@ -609,23 +1028,23 @@ app.post('/api/admin/abandoned-cart/recover/:id', checkAdminAuth, (req, res) => 
             <body>
                 <div class="email-card">
                     <div class="brand">
-                        <img src="https://yaadhee-1.onrender.com/assets/logo.jpg" alt="YADHEE" style="height: 50px; width: auto; display: block; margin: 0 auto 10px auto; object-fit: contain;">
+                        <h1 style="font-family: Georgia, serif; font-size: 32px; font-weight: bold; letter-spacing: 0.25em; color: #7A0C1E; text-transform: uppercase; margin: 0 auto 5px auto; text-align: center;">Yadhee</h1>
                         <p style="margin:5px 0 0 0; font-size:0.6rem; color:#8E877D; letter-spacing:0.05em; text-transform:uppercase;">Weaves of Antiquity, Gold of Gods</p>
                     </div>
-                    <h3 class="title">Secured Acquisitions Recovery Notice</h3>
+                    <h3 class="title">Complete Your Purchase</h3>
                     <div class="content">
                         <p>Dear ${customerName},</p>
-                        <p>We noticed that during your recent visit to Yadhee Heritage, you left behind some exquisite masterpieces in your shopping bag:</p>
+                        <p>We noticed that during your recent visit to Yadhee, you left some items in your shopping cart:</p>
                         <ul>
                             ${cartItemsList}
                         </ul>
-                        <p>As a gesture of our appreciation for your interest in our generational silk weaves and hand-chased ornaments, we have authorized a **10% Sovereign Discount** on these pieces.</p>
+                        <p>To help you complete your purchase, we would like to offer you a **10% discount** on these items.</p>
                         <div class="coupon-box">
-                            <p style="margin:0 0 10px 0; font-size:0.8rem; font-weight:600; color:#C5A059;">YOUR PERSONAL RECOVERY KEY</p>
+                            <p style="margin:0 0 10px 0; font-size:0.8rem; font-weight:600; color:#C5A059;">YOUR PERSONAL DISCOUNT CODE</p>
                             <span class="coupon-code">YADHEE10</span>
-                            <p style="margin:10px 0 0 0; font-size:0.75rem; color:#8E877D;">Apply this code at checkout to secure your 10% sovereign discount.</p>
+                            <p style="margin:10px 0 0 0; font-size:0.75rem; color:#8E877D;">Apply this code at checkout to receive your 10% discount.</p>
                         </div>
-                        <p>If you have any questions or require custom atelier fitting details, our master stylists are ready to assist you.</p>
+                        <p>If you have any questions or require custom stitching, our customer support team is ready to help.</p>
                     </div>
                     <div class="footer">
                         <p>&copy; 2026 Yadhee Luxury Heritage Pvt. Ltd. All rights reserved. Crafted in slow fashion.</p>
@@ -729,7 +1148,7 @@ app.post('/admin/login', (req, res) => {
             }
         }
 
-        res.render('admin_login', { error: "Invalid sovereign credentials." });
+        res.render('admin_login', { error: "Invalid admin credentials." });
     });
 });
 

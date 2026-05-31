@@ -1,0 +1,46 @@
+<%- include('partials/header', { activePage: 'login', title: 'Login | Yadhee' }) %>
+
+<div class="auth-page-container">
+    <div class="auth-card-backdrop"></div>
+    <div class="auth-card reveal-on-scroll active">
+        <span class="section-accent text-center">User Access</span>
+        <h2 class="auth-title text-center">Account Login</h2>
+        <p class="auth-subtitle text-center">Log in to manage your cart, view your order history, and edit your profile details.</p>
+        
+        <% if (error) { %>
+            <div class="auth-error-box">
+                <i class="fa-solid fa-circle-exclamation gold-text"></i>
+                <span><%= error %></span>
+            </div>
+        <% } %>
+
+        <form action="/login" method="POST" class="auth-luxury-form">
+            <div class="auth-form-group">
+                <label for="usernameOrEmail">Username or Email</label>
+                <div class="auth-input-wrapper">
+                    <i class="fa-regular fa-envelope auth-field-icon"></i>
+                    <input type="text" id="usernameOrEmail" name="usernameOrEmail" required placeholder="name@domain.com" autocomplete="username">
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label for="password">Password</label>
+                <div class="auth-input-wrapper">
+                    <i class="fa-solid fa-lock auth-field-icon"></i>
+                    <input type="password" id="password" name="password" required placeholder="•••••••••••••••" autocomplete="current-password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary auth-submit-btn">
+                Login <i class="fa-solid fa-arrow-right-long"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer-actions">
+            <p>New customer? <a href="/register" class="auth-hyperlink">Create Account <i class="fa-solid fa-user-plus"></i></a></p>
+            <a href="/" class="auth-back-link"><i class="fa-solid fa-arrow-left-long"></i> Return to Storefront</a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

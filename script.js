@@ -248,10 +248,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleWishlistItem = (id) => {
         if (wishlist.includes(id)) {
             wishlist = wishlist.filter(item => item !== id);
-            showToast('Acquisition removed from Favorites.');
+            showToast('Item removed from Favorites.');
         } else {
             wishlist.push(id);
-            showToast('Acquisition secured in your private Favorites.');
+            showToast('Item added to Favorites.');
         }
         localStorage.setItem('yadhee_wishlist', JSON.stringify(wishlist));
         updateWishlistUI();
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Wishlist Toggle button bindings
     favsToggle.addEventListener('click', () => {
-        showToast(`Your private Favorites contain ${wishlist.length} heirloom pieces.`);
+        showToast(`Your Favorites contain ${wishlist.length} items.`);
     });
 
 
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cartItemsContainer.innerHTML = `
                 <div class="cart-empty-message">
                     <i class="fa-solid fa-receipt"></i>
-                    <p>Your luxury collection vault is currently empty.</p>
+                    <p>Your shopping cart is currently empty.</p>
                     <a href="sarees.html" class="btn btn-primary" id="emptyCartBack">Explore Collections</a>
                 </div>
             `;
@@ -375,7 +375,19 @@ document.addEventListener('DOMContentLoaded', () => {
             cart.push({ id, qty });
         }
         
-        localStorage.setItem('yadhee_cart', JSON.stringify(cart));
+        const isLoggedIn = document.body.dataset.loggedIn === 'true';
+        if (isLoggedIn) {
+            const targetQty = existingItem ? existingItem.qty : qty;
+            fetch('/api/cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: id, quantity: targetQty })
+            })
+            .catch(err => console.error("DB cart add error:", err));
+        } else {
+            localStorage.setItem('yadhee_cart', JSON.stringify(cart));
+        }
+        
         updateCartUI();
         showToast(`${productsData[id].name} added to Shopping Bag.`);
         
@@ -391,16 +403,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 removeFromCart(id);
                 return;
             }
-            localStorage.setItem('yadhee_cart', JSON.stringify(cart));
+            
+            const isLoggedIn = document.body.dataset.loggedIn === 'true';
+            if (isLoggedIn) {
+                fetch('/api/cart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: id, quantity: item.qty })
+                })
+                .catch(err => console.error("DB cart adjust error:", err));
+            } else {
+                localStorage.setItem('yadhee_cart', JSON.stringify(cart));
+            }
+            
             updateCartUI();
         }
     };
 
     const removeFromCart = (id) => {
         cart = cart.filter(item => item.id !== id);
-        localStorage.setItem('yadhee_cart', JSON.stringify(cart));
+        
+        const isLoggedIn = document.body.dataset.loggedIn === 'true';
+        if (isLoggedIn) {
+            fetch(`/api/cart/${id}`, {
+                method: 'DELETE'
+            })
+            .catch(err => console.error("DB cart delete error:", err));
+        } else {
+            localStorage.setItem('yadhee_cart', JSON.stringify(cart));
+        }
+        
         updateCartUI();
-        showToast('Acquisition removed from Bag.');
+        showToast('Item removed from cart.');
     };
 
     // Toggle Drawer Open / Close
@@ -429,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (checkoutBtn && checkoutModal && checkoutModalClose) {
         checkoutBtn.addEventListener('click', () => {
             if (cart.length === 0) {
-                showToast('Your collection vault is empty.');
+                showToast('Your cart is empty.');
                 return;
             }
             cartOverlay.classList.remove('active');
@@ -448,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = checkoutForm.querySelector('.form-submit-btn');
             const originalContent = submitBtn.innerHTML;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Secure Transmitting...`;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
 
             const name = document.getElementById('checkoutName').value;
             const email = document.getElementById('checkoutEmail').value;
@@ -480,21 +514,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.innerHTML = originalContent;
 
                 if (data.success) {
-                    showToast(`Sovereign dispatch order #${data.orderId} secured successfully!`);
+                    showToast(`Order #${data.orderId} placed successfully!`);
                     cart = [];
                     localStorage.removeItem('yadhee_cart');
                     updateCartUI();
                     checkoutForm.reset();
                     checkoutModal.classList.remove('active');
                 } else {
-                    showToast(data.error || "Order dispatch transmission failed.");
+                    showToast(data.error || "Failed to place order.");
                 }
             })
             .catch(err => {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalContent;
                 console.error(err);
-                showToast("Secured gateway network transmission failure.");
+                showToast("Payment processing error. Please try again.");
             });
         });
     }
@@ -598,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${specsHTML}
                 </div>
                 <div class="modal-actions-row">
-                    <button class="modal-add-btn" id="modalAddBtn" data-id="${product.id}">Acquire Masterpiece</button>
+                    <button class="modal-add-btn" id="modalAddBtn" data-id="${product.id}">Add to cart</button>
                     <button class="modal-fav-btn" id="modalFavBtn" data-id="${product.id}"><i class="fa-regular fa-heart"></i></button>
                 </div>
             </div>
@@ -819,6 +853,84 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    // --- PATRON VAULT PROFILE CONTROLS & HEADER USER DROPDOWN ---
+    
+    // User dropdown in sticky header
+    const userMenuToggle = document.getElementById('userMenuToggle');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (userMenuToggle && userDropdown) {
+        userMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking anywhere else
+        document.addEventListener('click', () => {
+            userDropdown.classList.remove('active');
+        });
+    }
+
+    // Profile cabinet edit form handling on /vault page
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const profileDisplaySection = document.getElementById('profileDisplaySection');
+    const profileEditForm = document.getElementById('profileEditForm');
+    
+    if (editProfileBtn && cancelEditBtn && profileDisplaySection && profileEditForm) {
+        editProfileBtn.addEventListener('click', () => {
+            profileDisplaySection.style.display = 'none';
+            profileEditForm.style.display = 'block';
+        });
+        
+        cancelEditBtn.addEventListener('click', () => {
+            profileEditForm.style.display = 'none';
+            profileDisplaySection.style.display = 'block';
+            profileEditForm.reset();
+        });
+        
+        profileEditForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const phone = document.getElementById('editPhone').value;
+            const address = document.getElementById('editAddress').value;
+            
+            const submitBtn = profileEditForm.querySelector('.save-cabinet-btn');
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+            
+            fetch('/vault/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, address })
+            })
+            .then(res => res.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+                
+                if (data.success) {
+                    document.getElementById('dispPhone').textContent = phone || 'No phone recorded';
+                    document.getElementById('dispAddress').textContent = address || 'No shipping address recorded';
+                    
+                    profileEditForm.style.display = 'none';
+                    profileDisplaySection.style.display = 'block';
+                    
+                    showToast("Profile updated successfully.");
+                } else {
+                    showToast(data.error || "Failed to update profile.");
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+                console.error(err);
+                showToast("Failed to update profile due to a network error.");
+            });
+        });
+    }
+
     // --- INITIALIZE DYNAMIC PRODUCTS & UI ---
     fetch('/api/products')
         .then(res => res.json())
@@ -837,7 +949,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     specs: p.specs
                 };
             });
-            updateCartUI();
+
+            // Initialize Cart State based on Authentication (Amazon/Flipkart merge flow)
+            const isLoggedIn = document.body.dataset.loggedIn === 'true';
+            if (isLoggedIn) {
+                const localCart = JSON.parse(localStorage.getItem('yadhee_cart')) || [];
+                if (localCart.length > 0) {
+                    fetch('/api/cart/sync', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cart: localCart })
+                    })
+                    .then(res => res.json())
+                    .then(mergedCart => {
+                        localStorage.removeItem('yadhee_cart');
+                        cart = mergedCart;
+                        updateCartUI();
+                        showToast("We have merged your guest cart with your account.");
+                    })
+                    .catch(err => {
+                        console.error("Cart sync error:", err);
+                        cart = [];
+                        updateCartUI();
+                    });
+                } else {
+                    fetch('/api/cart')
+                        .then(res => res.json())
+                        .then(dbCart => {
+                            cart = dbCart;
+                            updateCartUI();
+                        })
+                        .catch(err => {
+                            console.error("Cart retrieval error:", err);
+                            cart = [];
+                            updateCartUI();
+                        });
+                }
+            } else {
+                cart = JSON.parse(localStorage.getItem('yadhee_cart')) || [];
+                updateCartUI();
+            }
+
             updateWishlistUI();
             bindGlobalProductCardEvents();
 
@@ -852,8 +1004,82 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(err => {
             console.error("Error loading dynamic luxury catalog registry:", err);
-            // Fallback load mock
             showToast("Secure catalog syncing error. Loading offline mode...");
         });
 
+    // --- EXPLORE SIDEBAR NAVIGATION DRAWER ---
+    const menuHamburger = document.getElementById('menuHamburger');
+    const sidebarDrawer = document.getElementById('sidebarDrawer');
+    const sidebarDrawerOverlay = document.getElementById('sidebarDrawerOverlay');
+    const drawerClose = document.getElementById('drawerClose');
+
+    if (menuHamburger && sidebarDrawer && sidebarDrawerOverlay) {
+        menuHamburger.addEventListener('click', () => {
+            sidebarDrawer.classList.add('active');
+            sidebarDrawerOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // prevent body scroll when open
+        });
+    }
+
+    const closeSidebarDrawer = () => {
+        if (sidebarDrawer && sidebarDrawerOverlay) {
+            sidebarDrawer.classList.remove('active');
+            sidebarDrawerOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    };
+
+    if (drawerClose) {
+        drawerClose.addEventListener('click', closeSidebarDrawer);
+    }
+
+    if (sidebarDrawerOverlay) {
+        sidebarDrawerOverlay.addEventListener('click', closeSidebarDrawer);
+    }
+
+    // Toggle expandable groups inside drawer
+    const collectionsGroupHeader = document.getElementById('collectionsGroupHeader');
+    const collectionsGroupLinks = document.getElementById('collectionsGroupLinks');
+    if (collectionsGroupHeader && collectionsGroupLinks) {
+        collectionsGroupHeader.addEventListener('click', () => {
+            const caret = collectionsGroupHeader.querySelector('.group-caret');
+            const isOpen = collectionsGroupLinks.classList.toggle('active');
+            if (isOpen) {
+                collectionsGroupLinks.style.maxHeight = collectionsGroupLinks.scrollHeight + 'px';
+                caret.className = 'fa-solid fa-minus group-caret';
+            } else {
+                collectionsGroupLinks.style.maxHeight = '0';
+                caret.className = 'fa-solid fa-plus group-caret';
+            }
+        });
+    }
+
+    const brandsGroupHeader = document.getElementById('brandsGroupHeader');
+    const brandsGroupLinks = document.getElementById('brandsGroupLinks');
+    if (brandsGroupHeader && brandsGroupLinks) {
+        brandsGroupHeader.addEventListener('click', () => {
+            const caret = brandsGroupHeader.querySelector('.group-caret');
+            const isOpen = brandsGroupLinks.classList.toggle('active');
+            if (isOpen) {
+                brandsGroupLinks.style.maxHeight = brandsGroupLinks.scrollHeight + 'px';
+                caret.className = 'fa-solid fa-minus group-caret';
+            } else {
+                brandsGroupLinks.style.maxHeight = '0';
+                caret.className = 'fa-solid fa-plus group-caret';
+            }
+        });
+    }
+
+    // Close Announcement Bar Handler
+    const closeAnnouncement = document.getElementById('closeAnnouncement');
+    const announcementBar = document.getElementById('announcementBar');
+    if (closeAnnouncement && announcementBar && mainHeader) {
+        closeAnnouncement.addEventListener('click', () => {
+            announcementBar.style.display = 'none';
+            document.body.classList.add('announcement-closed');
+            mainHeader.style.top = '0';
+        });
+    }
+
 });
+

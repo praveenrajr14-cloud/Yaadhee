@@ -24,8 +24,8 @@
                     <h1 class="hero-title">Sacred Metals &<br>Uncut Diamonds</h1>
                     <p class="hero-desc">Bespoke heirloom jewelry sculpted by generational master craftsmen, blending antique gold with rare precious gems.</p>
                     <div class="hero-buttons">
-                        <a href="#collections" class="btn btn-primary scroll-to-gallery">Acquire Masterpieces</a>
-                        <a href="#atelier" class="btn btn-secondary">Book Custom Fitting</a>
+                        <a href="#collections" class="btn btn-primary scroll-to-gallery">Shop Collections</a>
+                        <a href="#atelier" class="btn btn-secondary">Book Appointment</a>
                     </div>
                 </div>
             </div>
@@ -39,11 +39,13 @@
 
         <!-- Scroll Indicator -->
         <div class="scroll-indicator">
-            <span class="scroll-text">Descend Into Luxury</span>
+            <span class="scroll-text">Scroll Down</span>
             <div class="scroll-mouse">
                 <div class="scroll-wheel"></div>
             </div>
         </div>
+
+
     </section>
 
     <!-- Story / Heritage Section (The Craftsmanship) -->
@@ -93,7 +95,7 @@
                 <span class="section-accent">Curated Selections</span>
                 <h2 class="section-title">Our Masterpiece Offerings</h2>
                 <div class="filter-controls">
-                    <button class="filter-btn active" data-filter="all">The Entire Vault</button>
+                    <button class="filter-btn active" data-filter="all">All Masterpieces</button>
                     <button class="filter-btn" data-filter="saree">Handwoven Sarees</button>
                     <button class="filter-btn" data-filter="jewel">Temple & Polki Jewels</button>
                 </div>
@@ -124,7 +126,7 @@
                             <span class="price">₹<%= product.price_inr.toLocaleString('en-IN') %></span>
                             <span class="price-usd">($<%= product.price_usd.toLocaleString() %>)</span>
                         </div>
-                        <button class="add-to-bag-btn">Acquire <%= product.category === 'saree' ? 'Saree' : 'Jewels' %></button>
+                        <button class="add-to-bag-btn">Add to cart</button>
                     </div>
                 </div>
                 <% }); %>

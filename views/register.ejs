@@ -1,0 +1,74 @@
+<%- include('partials/header', { activePage: 'register', title: 'Register | Yadhee' }) %>
+
+<div class="auth-page-container">
+    <div class="auth-card-backdrop"></div>
+    <div class="auth-card reveal-on-scroll active wide-card">
+        <span class="section-accent text-center">User Registration</span>
+        <h2 class="auth-title text-center">Create Account</h2>
+        <p class="auth-subtitle text-center">Register an account to track your orders, manage your cart, and edit your profile details.</p>
+        
+        <% if (error) { %>
+            <div class="auth-error-box">
+                <i class="fa-solid fa-circle-exclamation gold-text"></i>
+                <span><%= error %></span>
+            </div>
+        <% } %>
+
+        <form action="/register" method="POST" class="auth-luxury-form">
+            <div class="auth-form-row">
+                <div class="auth-form-group">
+                    <label for="username">Username *</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-regular fa-user auth-field-icon"></i>
+                        <input type="text" id="username" name="username" required placeholder="e.g. arya_singh" autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="auth-form-group">
+                    <label for="email">Email Address *</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-regular fa-envelope auth-field-icon"></i>
+                        <input type="email" id="email" name="email" required placeholder="name@domain.com" autocomplete="email">
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-form-row">
+                <div class="auth-form-group">
+                    <label for="password">Password *</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-lock auth-field-icon"></i>
+                        <input type="password" id="password" name="password" required placeholder="•••••••••••••••" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <div class="auth-form-group">
+                    <label for="phone">Phone Number (Optional)</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-phone auth-field-icon"></i>
+                        <input type="tel" id="phone" name="phone" placeholder="e.g. +91 99887 76655">
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-form-group full-width">
+                <label for="address">Shipping Address (Optional)</label>
+                <div class="auth-input-wrapper textarea-wrapper">
+                    <i class="fa-solid fa-map-location-dot auth-field-icon"></i>
+                    <textarea id="address" name="address" placeholder="Enter standard shipping address, suite, city, state, country, zip..." rows="3"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary auth-submit-btn">
+                Register <i class="fa-solid fa-crown"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer-actions">
+            <p>Already have an account? <a href="/login" class="auth-hyperlink">Login here <i class="fa-solid fa-arrow-right-to-bracket"></i></a></p>
+            <a href="/" class="auth-back-link"><i class="fa-solid fa-arrow-left-long"></i> Return to Storefront</a>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

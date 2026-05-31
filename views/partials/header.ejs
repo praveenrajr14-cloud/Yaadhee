@@ -13,31 +13,94 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-logged-in="<%= user ? 'true' : 'false' %>">
+
+    <!-- Left-Side Sliding Navigation Drawer -->
+    <div class="sidebar-drawer-overlay" id="sidebarDrawerOverlay"></div>
+    <div class="sidebar-drawer" id="sidebarDrawer" role="dialog" aria-modal="true" aria-label="Explore Menu">
+        <!-- Drawer Header -->
+        <div class="drawer-header">
+            <h3>Explore</h3>
+            <button class="drawer-close-btn" id="drawerClose" aria-label="Close Menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        
+        <!-- Drawer Menu Body -->
+        <div class="drawer-menu-body">
+            <a href="/" class="drawer-menu-link">Home</a>
+            <a href="/bestsellers" class="drawer-menu-link">Best Sellers</a>
+            <a href="/new-arrivals" class="drawer-menu-link">New Arrivals</a>
+            
+            <!-- Expandable Collections Group -->
+            <div class="drawer-menu-group">
+                <div class="group-header" id="collectionsGroupHeader">
+                    <span>Collections</span>
+                    <i class="fa-solid fa-plus group-caret"></i>
+                </div>
+                <div class="group-links" id="collectionsGroupLinks">
+                    <a href="/sarees" class="group-sublink">Sarees</a>
+                    <a href="/jewels" class="group-sublink">Jewels</a>
+                </div>
+            </div>
+
+            <!-- Expandable Brands Group -->
+            <div class="drawer-menu-group">
+                <div class="group-header" id="brandsGroupHeader">
+                    <span>Brands</span>
+                    <i class="fa-solid fa-plus group-caret"></i>
+                </div>
+                <div class="group-links" id="brandsGroupLinks">
+                    <a href="/about" class="group-sublink">Our Story</a>
+                    <a href="/contact" class="group-sublink">Contact Us</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Drawer Footer (Solid Black Login Bar) -->
+        <div class="drawer-footer">
+            <% if (typeof user !== 'undefined' && user) { %>
+                <div class="drawer-user-info">
+                    <span class="user-name-label">Logged in as: <strong><%= user.username %></strong></span>
+                    <div class="footer-links-row">
+                        <a href="/vault" class="footer-action-link">My Account</a>
+                        <a href="/logout" class="footer-action-link logout-btn-text">Logout</a>
+                    </div>
+                </div>
+            <% } else { %>
+                <a href="/login" class="drawer-login-btn">Log in</a>
+            <% } %>
+        </div>
+    </div>
 
     <!-- Custom Luxury Cursor Ring -->
     <div id="custom-cursor" class="custom-cursor"></div>
     <div id="custom-cursor-dot" class="custom-cursor-dot"></div>
 
     <!-- Top Luxury Announcement Bar -->
-    <div class="announcement-bar">
+    <div class="announcement-bar" id="announcementBar">
         <div class="announcement-slider">
-            <span class="announcement-item"><i class="fa-solid fa-crown"></i> Complimentary Worldwide Insured Shipping & Custom Atelier Fitting</span>
-            <span class="announcement-item"><i class="fa-solid fa-gem"></i> Every Purchase Accompanied by Authenticity & Silk Mark Certifications</span>
+            <span class="announcement-item">FREE SHIPPING IN INDIA</span>
+            <span class="announcement-item">Delivery Time: 15-20 Working Days</span>
+            <span class="announcement-item">FREE SHIPPING IN INDIA</span>
+            <span class="announcement-item">Delivery Time: 15-20 Working Days</span>
+            <span class="announcement-item">FREE SHIPPING IN INDIA</span>
+            <span class="announcement-item">Delivery Time: 15-20 Working Days</span>
         </div>
+        <button class="announcement-close-btn" id="closeAnnouncement" aria-label="Close Announcement">✕</button>
     </div>
 
     <!-- Elegant Sticky Navigation Header -->
     <header class="main-header">
         <div class="nav-container">
             <!-- Left Navigation Menu Links -->
-            <nav class="nav-links">
+            <nav class="nav-links" style="align-items: center;">
+                <button class="nav-hamburger-btn" id="menuHamburger" aria-label="Open Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
                 <a href="/" class="nav-item <%= activePage === 'home' ? 'active' : '' %>">Home</a>
-                <a href="/about" class="nav-item <%= activePage === 'about' ? 'active' : '' %>">Our Story</a>
+                <a href="/bestsellers" class="nav-item <%= activePage === 'bestsellers' ? 'active' : '' %>">Best Sellers</a>
                 <a href="/new-arrivals" class="nav-item <%= activePage === 'new-arrivals' ? 'active' : '' %>">New Arrivals</a>
-                <a href="/sarees" class="nav-item <%= activePage === 'sarees' ? 'active' : '' %>">Sarees</a>
-                <a href="/jewels" class="nav-item <%= activePage === 'jewels' ? 'active' : '' %>">Jewels</a>
-                <a href="/contact" class="nav-item <%= activePage === 'contact' ? 'active' : '' %>">Contact</a>
             </nav>
 
             <!-- Brand Logo in Center -->
@@ -61,6 +124,26 @@
                     <i class="fa-solid fa-bag-shopping"></i>
                     <span class="action-badge cart-count">0</span>
                 </button>
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <div class="user-menu-container">
+                        <button class="action-btn user-btn" id="userMenuToggle" aria-label="My Account">
+                            <i class="fa-regular fa-user"></i>
+                        </button>
+                        <div class="user-dropdown" id="userDropdown">
+                            <div class="dropdown-header">
+                                <span class="patron-title">My Account</span>
+                                <span class="patron-name"><%= user.username %></span>
+                            </div>
+                            <hr class="dropdown-divider">
+                            <a href="/vault" class="dropdown-item"><i class="fa-solid fa-gem"></i> My Orders</a>
+                            <a href="/logout" class="dropdown-item"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <a href="/login" class="action-btn login-link" aria-label="Login">
+                        <i class="fa-regular fa-user"></i>
+                    </a>
+                <% } %>
             </div>
         </div>
     </header>
@@ -68,7 +151,7 @@
     <!-- Interactive Sliding Search Bar (Appears on clicking search icon) -->
     <div class="search-overlay" id="searchOverlay">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Search the weaves of Yadhee..." autocomplete="off">
+            <input type="text" id="searchInput" placeholder="Search Yadhee..." autocomplete="off">
             <button class="search-submit-btn"><i class="fa-solid fa-arrow-right-long"></i></button>
             <button class="search-close" id="searchClose"><i class="fa-solid fa-xmark"></i></button>
         </div>

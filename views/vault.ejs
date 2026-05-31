@@ -1,0 +1,180 @@
+<%- include('partials/header', { activePage: 'vault', title: 'My Account | Yadhee' }) %>
+
+<div class="vault-hero-banner" style="background-image: linear-gradient(rgba(30, 2, 6, 0.88), rgba(30, 2, 6, 0.7)), url('assets/hero_saree.png');">
+    <div class="banner-content text-center">
+        <span class="section-accent">Personal Profile</span>
+        <h1 class="page-main-title">My Account</h1>
+        <p class="banner-subtitle">Welcome back, <%= user.username %>. Manage your profile information, inspect your order history, and track payment transactions.</p>
+    </div>
+</div>
+
+<div class="vault-container">
+    <div class="vault-grid">
+        <!-- I. PROFILE CABINET (Left Column) -->
+        <aside class="profile-cabinet reveal-on-scroll active">
+            <div class="cabinet-header">
+                <i class="fa-solid fa-address-card gold-text cabinet-icon"></i>
+                <h3>Profile Information</h3>
+            </div>
+            
+            <div class="cabinet-body">
+                <div class="credential-item">
+                    <span class="cred-label">Username</span>
+                    <span class="cred-value"><%= user.username %></span>
+                </div>
+                <div class="credential-item">
+                    <span class="cred-label">Email Address</span>
+                    <span class="cred-value"><%= user.email %></span>
+                </div>
+                
+                <hr class="cabinet-divider">
+                
+                <!-- Display Section -->
+                <div id="profileDisplaySection">
+                    <div class="credential-item">
+                        <span class="cred-label">Phone Number</span>
+                        <span class="cred-value" id="dispPhone"><%= user.phone || 'No phone recorded' %></span>
+                    </div>
+                    <div class="credential-item">
+                        <span class="cred-label">Shipping Address</span>
+                        <span class="cred-value address-value" id="dispAddress"><%= user.address || 'No shipping address recorded' %></span>
+                    </div>
+                    <button class="btn btn-secondary edit-cabinet-btn" id="editProfileBtn">
+                        Edit Profile <i class="fa-regular fa-pen-to-square"></i>
+                    </button>
+                </div>
+                
+                <!-- Edit Section (Hidden by Default) -->
+                <form id="profileEditForm" style="display: none;" class="cabinet-edit-form">
+                    <div class="auth-form-group">
+                        <label for="editPhone">Phone Number</label>
+                        <input type="tel" id="editPhone" name="phone" value="<%= user.phone %>" placeholder="+91 99887 76655">
+                    </div>
+                    <div class="auth-form-group">
+                        <label for="editAddress">Shipping Address</label>
+                        <textarea id="editAddress" name="address" rows="4" placeholder="Enter standard shipping address..."><%= user.address %></textarea>
+                    </div>
+                    <div class="edit-actions-row">
+                        <button type="submit" class="btn btn-primary save-cabinet-btn">Save Records</button>
+                        <button type="button" class="btn btn-secondary cancel-cabinet-btn" id="cancelEditBtn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </aside>
+
+        <!-- II. HEIRLOOM CHRONICLES (Right Column - Orders & Payments) -->
+        <main class="heirloom-chronicles reveal-on-scroll active">
+            <div class="chronicles-header">
+                <i class="fa-solid fa-gem gold-text chronicles-icon"></i>
+                <h3>Order History</h3>
+            </div>
+
+            <% if (orders.length === 0) { %>
+                <div class="empty-chronicles-box">
+                    <i class="fa-solid fa-boxes-packing gold-text box-icon"></i>
+                    <h4>Your Order History is Empty</h4>
+                    <p>You haven't placed any orders yet. Start exploring our collections to add items to your cart and place your first order.</p>
+                    <a href="/sarees" class="btn btn-primary explore-collections-btn">Shop Sarees</a>
+                </div>
+            <% } else { %>
+                <div class="chronicles-list">
+                    <% orders.forEach(order => { %>
+                        <div class="order-vault-card">
+                            <!-- Card Header -->
+                            <div class="card-header-row">
+                                <div class="header-block">
+                                    <span class="block-label">ORDER ID</span>
+                                    <span class="block-val">YDH-ORD-<%= String(order.id).padStart(5, '0') %></span>
+                                </div>
+                                <div class="header-block">
+                                    <span class="block-label">ORDER DATE</span>
+                                    <span class="block-val"><%= new Date(order.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></span>
+                                </div>
+                                <div class="header-block">
+                                    <span class="block-label">ORDER STATUS</span>
+                                    <span class="badge badge-<%= order.status.toLowerCase() %>"><%= order.status %></span>
+                                </div>
+                                <div class="header-block price-block text-right">
+                                    <span class="block-label">TOTAL PAID</span>
+                                    <span class="block-val gold-text font-accent font-bold">₹<%= order.total_price_inr.toLocaleString('en-IN') %> <span class="usd-price">($<%= order.total_price_usd.toLocaleString() %>)</span></span>
+                                </div>
+                            </div>
+
+                            <!-- Card Grid Details -->
+                            <div class="card-details-grid">
+                                <!-- Order Items List -->
+                                <div class="card-items-panel">
+                                    <span class="panel-title">Ordered Items</span>
+                                    <div class="order-items-col">
+                                        <% order.items.forEach(item => { %>
+                                            <div class="order-item-row">
+                                                <div class="item-img-container">
+                                                    <img src="<%= item.image_url %>" alt="<%= item.name %>" class="item-img">
+                                                </div>
+                                                <div class="item-info">
+                                                    <h4 class="item-name"><%= item.name %></h4>
+                                                    <span class="item-meta"><%= item.type %> • <%= item.category.toUpperCase() %></span>
+                                                    <div class="item-pricing">
+                                                        <span class="item-qty">Qty: <%= item.quantity %></span>
+                                                        <span class="item-price">Unit Price: ₹<%= item.price_inr.toLocaleString('en-IN') %> ($<%= item.price_usd.toLocaleString() %>)</span>
+                                                    </div>
+                                                </div>
+                                                <a href="/<%= item.category === 'saree' ? 'sarees' : 'jewels' %>#<%= item.product_id %>" class="quick-inspect-link" title="View Item Details">
+                                                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                                </a>
+                                            </div>
+                                        <% }) %>
+                                    </div>
+                                </div>
+
+                                <!-- Payment & Shipping Logistics -->
+                                <div class="card-logistics-panel">
+                                    <div class="logistics-section">
+                                        <span class="panel-title">Payment History</span>
+                                        <div class="payment-logs-box">
+                                            <div class="log-row">
+                                                <span class="log-label">Payment Status</span>
+                                                <span class="log-val success-text"><i class="fa-solid fa-circle-check"></i> APPROVED</span>
+                                            </div>
+                                            <div class="log-row">
+                                                <span class="log-label">Payment Gateway</span>
+                                                <span class="log-val font-accent">YADHEE Escrow</span>
+                                            </div>
+                                            <div class="log-row">
+                                                <span class="log-label">Transaction ID</span>
+                                                <span class="log-val code-val gold-text"><%= order.payment_txn_id || 'YDH-TXN-SIMULATED-' + order.id %></span>
+                                            </div>
+                                            <div class="log-row">
+                                                <span class="log-label">Amount Paid</span>
+                                                <span class="log-val font-bold">₹<%= order.total_price_inr.toLocaleString('en-IN') %> INR</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="logistics-section">
+                                        <span class="panel-title">Shipping Details</span>
+                                        <div class="shipping-logs-box">
+                                            <span class="shipping-recipient"><i class="fa-solid fa-user gold-text"></i> <%= order.customer_name %></span>
+                                            <span class="shipping-tel"><i class="fa-solid fa-phone"></i> <%= order.customer_phone %></span>
+                                            <span class="shipping-email"><i class="fa-solid fa-envelope"></i> <%= order.customer_email %></span>
+                                            <p class="shipping-address"><i class="fa-solid fa-map-pin"></i> <%= order.shipping_address %></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Secure Invoice Actions -->
+                                    <div class="invoice-action-box">
+                                        <a href="/orders/invoice/<%= order.id %>" target="_blank" class="btn btn-primary download-invoice-btn">
+                                            Download PDF Invoice <i class="fa-solid fa-file-pdf"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </main>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

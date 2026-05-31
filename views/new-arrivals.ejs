@@ -4,8 +4,8 @@
     <section class="page-title-banner" style="background-image: linear-gradient(rgba(30, 2, 6, 0.85), rgba(30, 2, 6, 0.7)), url('assets/hero_jewel.png');">
         <div class="banner-content text-center">
             <span class="section-accent">The Autumnal Trousseau Curation</span>
-            <h1 class="page-main-title">The New Arrivals Vault</h1>
-            <p class="banner-subtitle">Acquire the newest limited-edition weaves and handcrafted ornaments released straight from our design ateliers.</p>
+            <h1 class="page-main-title">New Arrivals</h1>
+            <p class="banner-subtitle">Explore the newest limited-edition sarees and handcrafted jewelry released straight from our design salons.</p>
         </div>
     </section>
 
@@ -41,7 +41,7 @@
                             <span class="price">₹<%= product.price_inr.toLocaleString('en-IN') %></span>
                             <span class="price-usd">($<%= product.price_usd.toLocaleString() %>)</span>
                         </div>
-                        <button class="add-to-bag-btn">Acquire <%= product.category === 'saree' ? 'Saree' : 'Jewels' %></button>
+                        <button class="add-to-bag-btn">Add to cart</button>
                     </div>
                 </div>
                 <% }); %>

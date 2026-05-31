@@ -2,7 +2,7 @@
     <div class="cart-drawer-overlay" id="cartOverlay">
         <div class="cart-drawer" role="dialog" aria-modal="true" aria-label="Shopping Bag">
             <div class="cart-header">
-                <h3>YOUR VALUED ACQUISITIONS</h3>
+                <h3>YOUR SHOPPING CART</h3>
                 <button class="cart-close-btn" id="cartClose" aria-label="Close Shopping Bag">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -12,26 +12,26 @@
                 <!-- Cart items loaded dynamically by JS -->
                 <div class="cart-empty-message">
                     <i class="fa-solid fa-receipt"></i>
-                    <p>Your luxury collection vault is currently empty.</p>
+                    <p>Your shopping cart is currently empty.</p>
                     <a href="/sarees" class="btn btn-primary" id="emptyCartBack">Explore Collections</a>
                 </div>
             </div>
 
             <div class="cart-footer" id="cartFooter">
-                <!-- 5% Sovereign Discount Banner -->
+                <!-- 5% Extra Discount Banner -->
                 <div class="cart-discount-banner" id="cartDiscountBanner">
                     <i class="fa-solid fa-gift"></i>
-                    <span>Extra 5% sovereign discount applied automatically!</span>
+                    <span>Extra 5% discount applied automatically!</span>
                 </div>
                 <div class="cart-total-row">
-                    <span>Est. Sovereign Value</span>
+                    <span>Estimated Total</span>
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
                         <span class="cart-original-price" id="cartOriginalPrice" style="font-size: 0.8rem; color: var(--color-gray-dark); text-decoration: line-through; font-family: var(--font-body);"></span>
                         <span class="cart-total-price" id="cartTotalPrice">₹0</span>
                     </div>
                 </div>
-                <p class="cart-footer-note">Duties, insured global transit, and custom stitching styling adjustments are calculated at dispatch checkout.</p>
-                <button class="checkout-btn" id="checkoutBtn">Initiate Secured Dispatch <i class="fa-solid fa-arrow-right-long"></i></button>
+                <p class="cart-footer-note">Duties, shipping, and styling adjustments are calculated at checkout.</p>
+                <button class="checkout-btn" id="checkoutBtn">Proceed to checkout <i class="fa-solid fa-arrow-right-long"></i></button>
             </div>
         </div>
     </div>
@@ -52,28 +52,28 @@
             <button class="modal-close-btn" id="checkoutModalClose" aria-label="Close Checkout"><i class="fa-solid fa-xmark"></i></button>
             <div class="luxury-form-container">
                 <form id="checkoutForm" class="luxury-form">
-                    <h3 class="form-title">Secured Dispatch Registry</h3>
-                    <p style="font-size: 0.8rem; color: var(--color-gray-dark); margin-bottom: 1.5rem; text-align: center; font-family: var(--font-body);">Provide shipping details for sovereign dispatch & custom atelier sizing.</p>
+                    <h3 class="form-title">Shipping Details</h3>
+                    <p style="font-size: 0.8rem; color: var(--color-gray-dark); margin-bottom: 1.5rem; text-align: center; font-family: var(--font-body);">Provide shipping details for delivery & sizing.</p>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="checkoutName">Full Name</label>
-                            <input type="text" id="checkoutName" required placeholder="Lady / Lord...">
+                            <input type="text" id="checkoutName" required placeholder="Full Name..." value="<%= (typeof user !== 'undefined' && user) ? user.username : '' %>">
                         </div>
                         <div class="form-group">
-                            <label for="checkoutEmail">Email Portal</label>
-                            <input type="email" id="checkoutEmail" required placeholder="name@domain.com">
+                            <label for="checkoutEmail">Email Address</label>
+                            <input type="email" id="checkoutEmail" required placeholder="name@domain.com" value="<%= (typeof user !== 'undefined' && user) ? user.email : '' %>">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="checkoutPhone">Phone (Secure Transit Contact)</label>
-                        <input type="tel" id="checkoutPhone" required placeholder="+91 ...">
+                        <label for="checkoutPhone">Phone Number</label>
+                        <input type="tel" id="checkoutPhone" required placeholder="+91 ..." value="<%= (typeof user !== 'undefined' && user) ? user.phone : '' %>">
                     </div>
                     <div class="form-group">
-                        <label for="checkoutAddress">Sovereign Shipping Address</label>
-                        <textarea id="checkoutAddress" rows="3" required placeholder="Full shipping address, suite, city, state, country, zip..."></textarea>
+                        <label for="checkoutAddress">Shipping Address</label>
+                        <textarea id="checkoutAddress" rows="3" required placeholder="Full shipping address, suite, city, state, country, zip..."><%= (typeof user !== 'undefined' && user) ? user.address : '' %></textarea>
                     </div>
                     <div style="border-top: 1px solid var(--color-gray-medium); padding-top: 1.5rem; margin-top: 1.5rem;">
-                        <h4 style="font-family: var(--font-accent); font-size: 0.75rem; letter-spacing: 0.15em; color: var(--color-gold); margin-bottom: 1rem; text-align: center;">Payment Method (Insured Escrow Protocol)</h4>
+                        <h4 style="font-family: var(--font-accent); font-size: 0.75rem; letter-spacing: 0.15em; color: var(--color-gold); margin-bottom: 1rem; text-align: center;">Payment Method</h4>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="cardNum">Secure Card Number</label>
@@ -98,7 +98,7 @@
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="form-submit-btn" style="margin-top: 1.5rem; width: 100%;">Authorise Insured Transit <i class="fa-solid fa-shield-halved"></i></button>
+                    <button type="submit" class="form-submit-btn" style="margin-top: 1.5rem; width: 100%;">Submit Payment <i class="fa-solid fa-shield-halved"></i></button>
                 </form>
             </div>
         </div>
@@ -126,7 +126,7 @@
 
                 <!-- Column 2: Collections Links -->
                 <div class="footer-col">
-                    <h4 class="footer-col-title">The Vault</h4>
+                    <h4 class="footer-col-title">Shop Collections</h4>
                     <ul class="footer-links">
                         <li><a href="/sarees" class="footer-link-item">Kanchipuram Silk Sarees</a></li>
                         <li><a href="/sarees" class="footer-link-item">Banarasi Brocades</a></li>
@@ -141,24 +141,24 @@
                 <div class="footer-col">
                     <h4 class="footer-col-title">Our Services</h4>
                     <ul class="footer-links">
-                        <li><a href="/contact" class="footer-link-item">Virtual Atelier Curation</a></li>
+                        <li><a href="/contact" class="footer-link-item">Custom Design Curation</a></li>
                         <li><a href="#" class="footer-link-item">Blouse Stitching & Styling</a></li>
                         <li><a href="#" class="footer-link-item">Jewelry Resizing & Gem Care</a></li>
-                        <li><a href="#" class="footer-link-item">Insured Worldwide Dispatch</a></li>
-                        <li><a href="#" class="footer-link-item">Sovereign Authenticity Seals</a></li>
-                        <li><a href="#" class="footer-link-item">Patron Care Center</a></li>
+                        <li><a href="#" class="footer-link-item">Insured Worldwide Shipping</a></li>
+                        <li><a href="#" class="footer-link-item">Authenticity Seals</a></li>
+                        <li><a href="#" class="footer-link-item">Customer Service</a></li>
                     </ul>
                 </div>
 
                 <!-- Column 4: Newsletter -->
                 <div class="footer-col newsletter-col">
-                    <h4 class="footer-col-title">Receive The Chronicles</h4>
-                    <p class="newsletter-desc">Subscribe to obtain announcements of rare private vault collections, artisan documentary releases, and styling atelier openings.</p>
+                    <h4 class="footer-col-title">Receive Our Newsletter</h4>
+                    <p class="newsletter-desc">Subscribe to receive updates about our collections, artisan releases, and design consultation openings.</p>
                     <form class="footer-newsletter-form" id="newsletterForm">
-                        <input type="email" placeholder="patron@domain.com" required aria-label="Newsletter Email Input">
+                        <input type="email" placeholder="name@domain.com" required aria-label="Newsletter Email Input">
                         <button type="submit" aria-label="Subscribe to newsletter"><i class="fa-solid fa-paper-plane"></i></button>
                     </form>
-                    <div id="newsletterSuccess" class="newsletter-success-text">Welcome to Yadhee's inner circle. Chronicles will reach you soon.</div>
+                    <div id="newsletterSuccess" class="newsletter-success-text">Welcome to Yadhee. We will send you updates soon.</div>
                 </div>
             </div>
 
