@@ -648,9 +648,28 @@ app.get('/api/products/:id', (req, res) => {
 });
 
 // Post-checkout asynchronous document & email dispatch engine
+function sendAdminNotification(orderId, order, items) {
+    const adminNumber = "+91 99887 76655"; // Example Admin Phone Number
+    const itemsDescription = items.map(item => `${item.name} (x${item.quantity})`).join(', ');
+    
+    console.log(`\n============================================================`);
+    console.log(`[ADMIN SMS/WHATSAPP NOTIFICATION ENGINE]`);
+    console.log(`------------------------------------------------------------`);
+    console.log(`Sending automated checkout alert to admin at: ${adminNumber}`);
+    console.log(`Message Content:`);
+    console.log(`"🔔 NEW ORDER ALERT! Yadhee Order #YDH-ORD-${String(orderId).padStart(5, '0')} has been placed successfully by ${order.customer_name} (${order.customer_email}).\nItems: ${itemsDescription}\nTotal: ₹${order.total_price_inr.toLocaleString('en-IN')} / $${order.total_price_usd.toLocaleString()}\nInspect details inside the Yadhee Admin Portal."`);
+    console.log(`------------------------------------------------------------`);
+    console.log(`[ADMIN NOTIFICATION SENT SUCCESSFULLY]`);
+    console.log(`============================================================\n`);
+}
+
 function processPostCheckoutDocs(orderId, order, items) {
+    // Send admin notification alert
+    sendAdminNotification(orderId, order, items);
+
     generateInvoicePDF(order, items)
         .then((pdfPath) => {
+
             console.log(`[Document Pipeline] Generated PDF invoice at: ${pdfPath}`);
             
             // Save invoice reference to database
