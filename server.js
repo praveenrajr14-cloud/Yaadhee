@@ -649,7 +649,7 @@ app.get('/api/products/:id', (req, res) => {
 
 // Post-checkout asynchronous document & email dispatch engine
 function sendAdminNotification(orderId, order, items) {
-    const adminNumber = "+91 99887 76655"; // Example Admin Phone Number
+    const adminNumber = "+91 7356146076"; // Admin Phone Number
     const itemsDescription = items.map(item => `${item.name} (x${item.quantity})`).join(', ');
     
     console.log(`\n============================================================`);
