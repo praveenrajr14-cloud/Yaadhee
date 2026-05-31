@@ -431,6 +431,11 @@ app.get('/vault', (req, res) => {
     });
 });
 
+// Defensive redirects for natural user variations of the order/account page
+app.get(['/orders', '/order', '/my-orders', '/my-account', '/account'], (req, res) => {
+    res.redirect('/vault');
+});
+
 // Update Profile POST
 app.post('/vault/update', (req, res) => {
     if (!req.session.user) {
