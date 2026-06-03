@@ -41,10 +41,20 @@ function generateInvoicePDF(order, items) {
             const colorGrayLight = '#DDD9D2';
 
             // 1. Header Branding Centered (Text Font Only)
-            doc.font('Times-BoldItalic')
-               .fontSize(28)
-               .fillColor(colorCrimson)
-               .text('Yadhee', { align: 'center', characterSpacing: 1 });
+            // 1. Header Branding Centered (Text Font Only)
+            const pinyonFontPath = path.join(dataDir, 'PinyonScript-Regular.ttf');
+            if (fs.existsSync(pinyonFontPath)) {
+                doc.registerFont('PinyonScript', pinyonFontPath);
+                doc.font('PinyonScript')
+                   .fontSize(36)
+                   .fillColor(colorCrimson)
+                   .text('Yadhee', { align: 'center' });
+            } else {
+                doc.font('Times-BoldItalic')
+                   .fontSize(28)
+                   .fillColor(colorCrimson)
+                   .text('Yadhee', { align: 'center', characterSpacing: 1 });
+            }
             doc.y = 65;
 
             doc.font('Times-Italic')
@@ -262,7 +272,7 @@ async function sendInvoiceEmail(order, invoicePath) {
         <meta charset="utf-8">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,600&family=Pinyon+Script&display=swap" rel="stylesheet">
         <style>
             body {
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -340,7 +350,7 @@ async function sendInvoiceEmail(order, invoicePath) {
     </head>
     <body>
             <div class="header">
-                <div class="logo" style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-style: italic; font-weight: 300; letter-spacing: 0.05em; color: #7A0C1E; text-align: center; margin: 0 auto 5px auto;">Yadhee</div>
+                <div class="logo" style="font-family: 'Pinyon Script', cursive; font-size: 42px; text-transform: none; font-weight: normal; color: #7A0C1E; text-align: center; margin: 0 auto 5px auto;">Yadhee</div>
                 <div class="subtitle">Heritage of Weaves & Jewels</div>
             </div>
             
@@ -429,7 +439,189 @@ async function sendInvoiceEmail(order, invoicePath) {
     }
 }
 
+/**
+ * Compiles a gorgeous PDF Purchase Order for raw materials and artisan items.
+ * @param {Object} po The purchase order record from SQLite
+ * @returns {Promise<string>} Relative path to the generated PO PDF
+ */
+function generatePOPDF(po) {
+    return new Promise((resolve, reject) => {
+        try {
+            const doc = new PDFDocument({ margin: 50, size: 'A4' });
+            const poId = po.id;
+            const pdfPath = path.join(invoicesDir, `po-${poId}.pdf`);
+            const writeStream = fs.createWriteStream(pdfPath);
+
+            doc.pipe(writeStream);
+
+            // Premium Brand Colors
+            const colorCrimson = '#7A0C1E';
+            const colorGold = '#C5A059';
+            const colorCharcoal = '#2A2425';
+            const colorGrayLight = '#DDD9D2';
+
+            // 1. Header Branding Centered
+            // 1. Header Branding Centered
+            const pinyonFontPathPO = path.join(dataDir, 'PinyonScript-Regular.ttf');
+            if (fs.existsSync(pinyonFontPathPO)) {
+                doc.registerFont('PinyonScript', pinyonFontPathPO);
+                doc.font('PinyonScript')
+                   .fontSize(36)
+                   .fillColor(colorCrimson)
+                   .text('Yadhee', { align: 'center' });
+            } else {
+                doc.font('Times-BoldItalic')
+                   .fontSize(28)
+                   .fillColor(colorCrimson)
+                   .text('Yadhee', { align: 'center', characterSpacing: 1 });
+            }
+            doc.y = 65;
+
+            doc.font('Times-Italic')
+               .fontSize(9)
+               .fillColor(colorGold)
+               .text('HERITAGE OF WEAVES & JEWELS', { align: 'center', characterSpacing: 1.5 })
+               .moveDown(0.5);
+
+            // Elegant Gold Divider Bar
+            doc.moveTo(50, doc.y)
+               .lineTo(545, doc.y)
+               .strokeColor(colorGold)
+               .lineWidth(1.5)
+               .stroke()
+               .moveDown(1.5);
+
+            const metadataStartY = doc.y;
+            
+            // Left Column: Supplier details
+            doc.font('Helvetica-Bold')
+               .fontSize(10)
+               .fillColor(colorGold)
+               .text('ARTISAN / SUPPLIER:', 50, metadataStartY)
+               .font('Helvetica-Bold')
+               .fontSize(11)
+               .fillColor(colorCharcoal)
+               .text(po.supplier_name, 50, metadataStartY + 15)
+               .font('Helvetica')
+               .fontSize(9)
+               .text(`Email: ${po.supplier_email || 'no-email@yadhee.com'}`, 50, metadataStartY + 30)
+               .text('Delivery Destination:', 50, metadataStartY + 45)
+               .font('Helvetica-Oblique')
+               .text('Yadhee Flagship Atelier Showroom,\nMumbai Suite 104, Taj Mahal Palace, Colaba', 50, metadataStartY + 57, { width: 230 });
+
+            // Right Column: PO summaries
+            doc.font('Helvetica-Bold')
+               .fontSize(10)
+               .fillColor(colorGold)
+               .text('PURCHASE ORDER:', 330, metadataStartY)
+               .font('Helvetica-Bold')
+               .fontSize(10)
+               .fillColor(colorCharcoal)
+               .text(`P.O. Ref: YDH-2026-PO-${poId}`, 330, metadataStartY + 15)
+               .font('Helvetica')
+               .fontSize(9)
+               .text(`Order Date: ${new Date(po.created_at || Date.now()).toLocaleDateString()}`, 330, metadataStartY + 30)
+               .text(`Fulfillment Status: ${po.status}`, 330, metadataStartY + 42)
+               .text(`Expected Delivery: ${new Date(po.expected_date).toLocaleDateString()}`, 330, metadataStartY + 54);
+
+            doc.moveDown(7.5);
+
+            // Light gray divider
+            doc.moveTo(50, doc.y)
+               .lineTo(545, doc.y)
+               .strokeColor(colorGrayLight)
+               .lineWidth(0.5)
+               .stroke()
+               .moveDown(1);
+
+            // 3. Itemized Materials Table
+            const tableHeaderY = doc.y;
+            doc.font('Helvetica-Bold').fontSize(9).fillColor(colorGold);
+            doc.text('Craft Material Description', 50, tableHeaderY);
+            doc.text('Quantity', 320, tableHeaderY);
+            doc.text('Unit Cost (INR)', 380, tableHeaderY, { width: 80, align: 'right' });
+            doc.text('Total Cost (INR)', 465, tableHeaderY, { width: 80, align: 'right' });
+
+            doc.moveTo(50, tableHeaderY + 15)
+               .lineTo(545, tableHeaderY + 15)
+               .strokeColor(colorGold)
+               .lineWidth(1)
+               .stroke();
+
+            doc.y = tableHeaderY + 22;
+
+            const rowY = doc.y;
+            doc.font('Helvetica-Bold').fontSize(9).fillColor(colorCharcoal)
+               .text(po.item_description, 50, rowY, { width: 250 });
+            
+            doc.font('Helvetica').fontSize(9)
+               .text(po.quantity.toString(), 320, rowY)
+               .text(`₹${po.unit_cost_inr.toLocaleString('en-IN')}`, 380, rowY, { width: 80, align: 'right' })
+               .text(`₹${po.total_cost_inr.toLocaleString('en-IN')}`, 465, rowY, { width: 80, align: 'right' });
+
+            doc.moveDown(2);
+            doc.moveTo(50, doc.y)
+               .lineTo(545, doc.y)
+               .strokeColor(colorGrayLight)
+               .lineWidth(0.5)
+               .stroke()
+               .moveDown(1.5);
+
+            // 4. Summaries and Totals
+            const summaryStartY = doc.y;
+            
+            // Left summary column: Artisan contract promise
+            doc.font('Helvetica-Oblique')
+               .fontSize(8)
+               .fillColor(colorGold)
+               .text('Artisan Procurement Terms & Conditions:', 50, summaryStartY)
+               .text('1. Sourcing must adhere strictly to pure Mulberry Silk & BIS assayed standards.', 50, summaryStartY + 12)
+               .text('2. Materials must be supplied in secure luxury boxes within scheduled timelines.', 50, summaryStartY + 22);
+
+            const labelX = 350;
+            const valueX = 465;
+
+            // Grand Total INR
+            doc.font('Helvetica-Bold')
+               .fontSize(11)
+               .fillColor(colorCrimson)
+               .text('Total P.O. Value (INR):', labelX, summaryStartY + 15, { width: 110, align: 'right' })
+               .text(`₹${po.total_cost_inr.toLocaleString('en-IN')}`, valueX, summaryStartY + 15, { width: 80, align: 'right' });
+
+            // 5. Footer Signature Notes
+            doc.moveTo(50, 715)
+               .lineTo(545, 715)
+               .strokeColor(colorGold)
+               .lineWidth(0.5)
+               .stroke();
+
+            doc.font('Times-Italic')
+               .fontSize(9)
+               .fillColor(colorGold)
+               .text("Authorized Procurement Ledger of Yadhee Heritage.", 50, 725, { align: 'center' });
+
+            doc.font('Helvetica')
+               .fontSize(7)
+               .fillColor('#8E877D')
+               .text('Yadhee Procurement Office • procurement@yadhee.com', 50, 740, { align: 'center' });
+
+            doc.end();
+
+            writeStream.on('finish', () => {
+                resolve(`/assets/invoices/po-${poId}.pdf`);
+            });
+
+            writeStream.on('error', (err) => {
+                reject(err);
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
 module.exports = {
     generateInvoicePDF,
-    sendInvoiceEmail
+    sendInvoiceEmail,
+    generatePOPDF
 };

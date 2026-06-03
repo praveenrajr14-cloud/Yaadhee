@@ -1023,6 +1023,18 @@
                 <a href="#products" class="nav-item active" onclick="switchNavTab(event, 'productsTab')">
                     <i class="fa-solid fa-cubes"></i> Products
                 </a>
+                <a href="#stocks" class="nav-item" onclick="switchNavTab(event, 'stocksTab')">
+                    <i class="fa-solid fa-warehouse"></i> Stocks &amp; Inventory
+                </a>
+                <a href="#reports" class="nav-item" onclick="switchNavTab(event, 'reportsTab')">
+                    <i class="fa-solid fa-chart-line"></i> Reports &amp; Analytics
+                </a>
+                <a href="#manual-invoice" class="nav-item" onclick="switchNavTab(event, 'invoiceTab')">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Manual Invoice
+                </a>
+                <a href="#purchase-orders" class="nav-item" onclick="switchNavTab(event, 'poTab')">
+                    <i class="fa-solid fa-truck-ramp-box"></i> Purchase Orders
+                </a>
                 <a href="#orders" class="nav-item" onclick="switchNavTab(event, 'ordersTab')">
                     <i class="fa-solid fa-receipt"></i> Orders
                 </a>
@@ -1180,6 +1192,280 @@
                             </div>
                         </div>
                         <% }); %>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB PANEL: STOCKS & INVENTORY MANAGEMENT -->
+                <!-- ============================================================= -->
+                <section id="stocksTab" class="tab-panel">
+                    <div class="page-header-row">
+                        <h1 class="page-title">Stocks &amp; Inventory Management</h1>
+                    </div>
+                    
+                    <div class="admin-table-container" style="background:#FFF; border:1px solid var(--color-gold-medium); border-radius:4px; margin-top:1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                        <table class="admin-table" style="width:100%; border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:var(--color-cream-sidebar); border-bottom:1px solid var(--color-gold-medium);">
+                                    <th style="padding:1rem; text-align:left; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Masterpiece Product</th>
+                                    <th style="padding:1rem; text-align:left; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Category / Subcategory</th>
+                                    <th style="padding:1rem; text-align:right; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Price (INR)</th>
+                                    <th style="padding:1rem; text-align:center; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Stock Level</th>
+                                    <th style="padding:1rem; text-align:center; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Status Pill</th>
+                                    <th style="padding:1rem; text-align:center; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Fulfillment Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% products.forEach(function(p) { %>
+                                <tr id="stock-row-<%= p.id %>" style="border-bottom:1px solid var(--color-gray-medium);">
+                                    <td style="padding:1rem; vertical-align:middle;">
+                                        <div style="display:flex; align-items:center; gap:0.8rem;">
+                                            <img src="/<%= p.image_url %>" style="width:42px; height:42px; object-fit:cover; border-radius:4px; border:1px solid var(--color-gold-medium);" alt="<%= p.name %>" onerror="this.src='https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=150&auto=format&fit=crop'">
+                                            <div>
+                                                <div style="font-weight:600; color:var(--color-charcoal); font-size:0.88rem;"><%= p.name %></div>
+                                                <div style="font-size:0.7rem; color:var(--color-gray-dark); font-family:monospace; margin-top:2px;">SKU ID: <%= p.id %></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="padding:1rem; color:var(--color-gray-dark); font-size:0.82rem;"><%= p.type %> (<%= p.subcategory %>)</td>
+                                    <td style="padding:1rem; text-align:right; font-weight:600; color:var(--color-charcoal); font-size:0.85rem;">₹<%= p.price_inr.toLocaleString('en-IN') %></td>
+                                    <td style="padding:1rem; text-align:center; vertical-align:middle;">
+                                        <div style="display:inline-flex; align-items:center; gap:0.3rem; border:1px solid var(--color-gold-medium); border-radius:4px; background:#FCFAF7; padding:0.15rem;">
+                                            <button type="button" style="border:none; background:none; cursor:pointer; padding:0.2rem 0.5rem; font-weight:bold; color:var(--color-crimson);" onclick="adjustStock('<%= p.id %>', -1)">-</button>
+                                            <input type="number" id="stock-input-<%= p.id %>" value="<%= p.stock_quantity %>" style="width:40px; text-align:center; border:none; background:transparent; font-weight:600; color:var(--color-charcoal); font-size:0.82rem;" onchange="updateStockInline('<%= p.id %>')">
+                                            <button type="button" style="border:none; background:none; cursor:pointer; padding:0.2rem 0.5rem; font-weight:bold; color:#67C23A;" onclick="adjustStock('<%= p.id %>', 1)">+</button>
+                                        </div>
+                                    </td>
+                                    <td style="padding:1rem; text-align:center; vertical-align:middle;">
+                                        <% if (p.stock_quantity === 0) { %>
+                                            <span style="background-color: var(--color-charcoal); color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing:0.02em;">Out of Stock</span>
+                                        <% } else if (p.stock_quantity < lowStockThreshold) { %>
+                                            <span style="background-color: var(--color-crimson); color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing:0.02em;">Low Stock</span>
+                                        <% } else { %>
+                                            <span style="background-color: #67C23A; color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing:0.02em;">In Stock</span>
+                                        <% } %>
+                                    </td>
+                                    <td style="padding:1rem; text-align:center; vertical-align:middle;">
+                                        <button type="button" class="add-new-btn" style="padding:0.3rem 0.8rem; font-size:0.75rem; background:var(--color-gold-bright); margin:0;" onclick="saveStockInline('<%= p.id %>')">Update</button>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB PANEL: SALES ANALYTICS & BI REPORTS -->
+                <!-- ============================================================= -->
+                <section id="reportsTab" class="tab-panel">
+                    <div class="page-header-row">
+                        <h1 class="page-title">Executive BI Reports &amp; Analytics</h1>
+                    </div>
+                    
+                    <!-- KPI Cards Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.5rem; margin-bottom: 2rem;">
+                        <!-- Revenue Card -->
+                        <div class="sales-overview-card" style="display:flex; flex-direction:column; gap:0.4rem; justify-content:center; padding: 1.5rem; min-height:120px; border-left: 4px solid var(--color-gold-bright);">
+                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-gray-dark); font-weight:600;">Total Sovereign Revenue</span>
+                            <span style="font-size: 1.8rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--color-crimson);">₹<%= (stats.total_inr || 0).toLocaleString('en-IN') %></span>
+                            <span style="font-size: 0.75rem; color: var(--color-gold-bright); font-weight:500;">$<%= (stats.total_usd || 0).toLocaleString() %> USD</span>
+                        </div>
+                        <!-- Valuation Card -->
+                        <div class="sales-overview-card" style="display:flex; flex-direction:column; gap:0.4rem; justify-content:center; padding: 1.5rem; min-height:120px; border-left: 4px solid var(--color-crimson);">
+                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-gray-dark); font-weight:600;">Inventory Asset Valuation</span>
+                            <span style="font-size: 1.8rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--color-charcoal);">₹<%= (stats.inventory_asset_value || 0).toLocaleString('en-IN') %></span>
+                            <span style="font-size: 0.72rem; color: var(--color-gray-dark); font-style:italic;">Calculated across active masterpieces</span>
+                        </div>
+                        <!-- Active PO Card -->
+                        <div class="sales-overview-card" style="display:flex; flex-direction:column; gap:0.4rem; justify-content:center; padding: 1.5rem; min-height:120px; border-left: 4px solid var(--color-gold-medium);">
+                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-gray-dark); font-weight:600;">Active Procurement value</span>
+                            <span style="font-size: 1.8rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--color-gold-bright);">₹<%= (stats.active_po_value || 0).toLocaleString('en-IN') %></span>
+                            <span style="font-size: 0.72rem; color: var(--color-gray-dark); font-style:italic;">Pending artisan silk &amp; gold orders</span>
+                        </div>
+                        <!-- Low Stock Card -->
+                        <div class="sales-overview-card" style="display:flex; flex-direction:column; gap:0.4rem; justify-content:center; padding: 1.5rem; min-height:120px; border-left: 4px solid #E6A23C;">
+                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-gray-dark); font-weight:600;">Low Stock Alerts</span>
+                            <span style="font-size: 1.8rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: #E6A23C;"><%= stats.low_stock %> Items</span>
+                            <span style="font-size: 0.72rem; color: var(--color-gray-dark); font-style:italic;">Below threshold (<%= lowStockThreshold %> units)</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Analytics Grid -->
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:2rem;">
+                        <div class="sales-overview-card" style="padding:1.5rem;">
+                            <span class="overview-title" style="margin-bottom:1rem; display:block; color:var(--color-crimson);">Monthly Revenue Trend (Luxury Projections)</span>
+                            <div style="width:100%; height:230px; background: #FCFAF7; border: 1px solid var(--color-gold-medium); border-radius: 4px; padding: 1rem; position:relative; overflow:hidden;">
+                                <svg style="width:100%; height:100%;" viewBox="0 0 400 200" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="var(--color-crimson)" stop-opacity="0.25"/>
+                                            <stop offset="100%" stop-color="var(--color-crimson)" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <line x1="0" y1="40" x2="400" y2="40" stroke="#F1ECE1" stroke-width="1"></line>
+                                    <line x1="0" y1="80" x2="400" y2="80" stroke="#F1ECE1" stroke-width="1"></line>
+                                    <line x1="0" y1="120" x2="400" y2="120" stroke="#F1ECE1" stroke-width="1"></line>
+                                    <line x1="0" y1="160" x2="400" y2="160" stroke="#F1ECE1" stroke-width="1"></line>
+                                    <path d="M 0 170 Q 80 120 160 145 T 320 60 L 400 95 L 400 200 L 0 200 Z" fill="url(#areaGradient)"></path>
+                                    <path d="M 0 170 Q 80 120 160 145 T 320 60 L 400 95" fill="none" stroke="var(--color-crimson)" stroke-width="3"></path>
+                                    <circle cx="80" cy="130" r="4" fill="var(--color-gold-bright)"></circle>
+                                    <circle cx="160" cy="145" r="4" fill="var(--color-gold-bright)"></circle>
+                                    <circle cx="240" cy="90" r="4" fill="var(--color-gold-bright)"></circle>
+                                    <circle cx="320" cy="60" r="4" fill="var(--color-gold-bright)"></circle>
+                                    <circle cx="400" cy="95" r="4" fill="var(--color-gold-bright)"></circle>
+                                </svg>
+                                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--color-gray-dark); margin-top:0.3rem;">
+                                    <span>Jan</span>
+                                    <span>Feb</span>
+                                    <span>Mar</span>
+                                    <span>Apr</span>
+                                    <span>May</span>
+                                    <span>Jun (Current)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sales-overview-card" style="padding:1.5rem;">
+                            <span class="overview-title" style="margin-bottom:1rem; display:block; color:var(--color-crimson);">Masterpiece Distribution (Category Inventory)</span>
+                            <div style="width:100%; height:230px; background: #FCFAF7; border: 1px solid var(--color-gold-medium); border-radius: 4px; padding: 1.5rem; display:flex; align-items:center; gap:2rem; justify-content:center;">
+                                <svg style="width:120px; height:120px; flex-shrink:0;" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#F1ECE1" stroke-width="3.5"></circle>
+                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-crimson)" stroke-width="3.5" stroke-dasharray="60 40" stroke-dashoffset="25"></circle>
+                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-gold-bright)" stroke-width="3.5" stroke-dasharray="40 60" stroke-dashoffset="85"></circle>
+                                </svg>
+                                <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.78rem;">
+                                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                                        <span style="display:inline-block; width:12px; height:12px; background-color:var(--color-crimson); border-radius:2px;"></span>
+                                        <span style="font-weight:600; color:var(--color-charcoal);">Bespoke Sarees (60%)</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                                        <span style="display:inline-block; width:12px; height:12px; background-color:var(--color-gold-bright); border-radius:2px;"></span>
+                                        <span style="font-weight:600; color:var(--color-charcoal);">Sovereign Jewels (40%)</span>
+                                    </div>
+                                    <div style="font-size:0.7rem; color:var(--color-gray-dark); margin-top:0.4rem; font-style:italic;">
+                                        Based on direct ledger asset weights.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB PANEL: MANUAL CUSTOM INVOICING -->
+                <!-- ============================================================= -->
+                <section id="invoiceTab" class="tab-panel">
+                    <div class="page-header-row">
+                        <h1 class="page-title">Generate Offline Custom Invoice</h1>
+                    </div>
+                    
+                    <div class="sales-overview-card" style="max-width: 650px; margin: 1.5rem auto 0 auto; padding: 2rem; border-top: 3px solid var(--color-gold-bright);">
+                        <span class="overview-title" style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.5rem; border-bottom:1px solid var(--color-gold-medium); padding-bottom:0.8rem; color:var(--color-crimson);">
+                            <i class="fa-solid fa-file-signature"></i> Compile Showroom Walk-in Order Invoice
+                        </span>
+                        <form action="/admin/invoice/manual" method="POST" style="display:flex; flex-direction:column; gap:1.2rem;" class="dashboard-form">
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                                <div class="form-group" style="display:flex; flex-direction:column; gap:0.3rem;">
+                                    <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Customer Full Name</label>
+                                    <input type="text" name="customer_name" required placeholder="e.g. Priyadarshini Patel" style="padding:0.6rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                                </div>
+                                <div class="form-group" style="display:flex; flex-direction:column; gap:0.3rem;">
+                                    <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Customer Email Address</label>
+                                    <input type="email" name="customer_email" required placeholder="e.g. priya@patel.com" style="padding:0.6rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                                </div>
+                            </div>
+                            <div class="form-group" style="display:flex; flex-direction:column; gap:0.3rem;">
+                                <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Customer Contact Phone</label>
+                                    <input type="tel" name="customer_phone" required placeholder="e.g. 7356146076" style="padding:0.6rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                            </div>
+                            <div class="form-group" style="display:flex; flex-direction:column; gap:0.3rem;">
+                                <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Billing &amp; Shipping Address</label>
+                                <textarea name="shipping_address" required rows="3" placeholder="e.g. Suite 42, Emerald Court, Nariman Point, Mumbai" style="padding:0.6rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-family:inherit; font-size:0.85rem; resize:none;"></textarea>
+                            </div>
+                            
+                            <div style="display:grid; grid-template-columns:2fr 1fr; gap:1rem;">
+                                <div class="form-group" style="display:flex; flex-direction:column; gap:0.3rem;">
+                                    <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Select Showroom Masterpiece</label>
+                                    <select name="product_id" required style="padding:0.6rem; border:1px solid var(--color-gold-medium); border-radius:4px; background:#fff; font-size:0.85rem;">
+                                        <% products.forEach(function(p) { %>
+                                            <option value="<%= p.id %>"><%= p.name %> [<%= p.id %>] - ₹<%= p.price_inr.toLocaleString('en-IN') %> (In Vault: <%= p.stock_quantity %>)</option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="display:flex; flex-direction:column; gap:0.3rem;">
+                                    <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Quantity Purchased</label>
+                                    <input type="number" name="quantity" min="1" max="10" value="1" required style="padding:0.6rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="add-new-btn" style="width:100%; padding:0.8rem; font-size:0.9rem; margin-top:0.5rem; font-weight:600;">
+                                Compile &amp; Dispatch Invoice <i class="fa-solid fa-file-invoice-dollar"></i>
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB PANEL: ARTISAN LEGER / PURCHASE ORDERS -->
+                <!-- ============================================================= -->
+                <section id="poTab" class="tab-panel">
+                    <div class="page-header-row">
+                        <h1 class="page-title">Artisan Procurement &amp; Purchase Orders</h1>
+                        <button type="button" class="add-new-btn" onclick="openRaisePOModal()">
+                            Raise New Purchase Order
+                        </button>
+                    </div>
+                    
+                    <div class="admin-table-container" style="background:#FFF; border:1px solid var(--color-gold-medium); border-radius:4px; margin-top:1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                        <table class="admin-table" style="width:100%; border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:var(--color-cream-sidebar); border-bottom:1px solid var(--color-gold-medium);">
+                                    <th style="padding:1rem; text-align:left; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">P.O. Reference</th>
+                                    <th style="padding:1rem; text-align:left; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Weaver / Goldsmith Curator</th>
+                                    <th style="padding:1rem; text-align:left; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Itemized Materials</th>
+                                    <th style="padding:1rem; text-align:center; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Qty</th>
+                                    <th style="padding:1rem; text-align:right; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Total Value (INR)</th>
+                                    <th style="padding:1rem; text-align:center; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Fulfillment Status</th>
+                                    <th style="padding:1rem; text-align:center; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Expected Delivery</th>
+                                    <th style="padding:1rem; text-align:center; font-size:0.75rem; text-transform:uppercase; color:var(--color-gold-bright);">Sovereign Archives</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (purchaseOrders.length === 0) { %>
+                                    <tr>
+                                        <td colspan="8" style="text-align:center; padding: 2rem; color: var(--color-gray-dark); font-style:italic;">No purchase orders raised in the procurement ledger.</td>
+                                    </tr>
+                                <% } else { %>
+                                    <% purchaseOrders.forEach(function(po) { %>
+                                        <tr style="border-bottom:1px solid var(--color-gray-medium);">
+                                            <td style="padding:1rem; font-weight:600; color:var(--color-charcoal); font-size:0.85rem;">YDH-2026-PO-<%= po.id %></td>
+                                            <td style="padding:1rem;">
+                                                <div style="font-weight:600; color:var(--color-charcoal); font-size:0.85rem;"><%= po.supplier_name %></div>
+                                                <div style="font-size:0.72rem; color:var(--color-gray-dark); margin-top:2px;"><%= po.supplier_email || 'no-email@yadhee.com' %></div>
+                                            </td>
+                                            <td style="padding:1rem; font-size:0.82rem; color:var(--color-gray-dark); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<%= po.item_description %>"><%= po.item_description %></td>
+                                            <td style="padding:1rem; text-align:center; font-weight:600; font-size:0.82rem;"><%= po.quantity %></td>
+                                            <td style="padding:1rem; text-align:right; font-weight:600; color:var(--color-crimson); font-size:0.85rem;">₹<%= po.total_cost_inr.toLocaleString('en-IN') %></td>
+                                            <td style="padding:1rem; text-align:center; vertical-align:middle;">
+                                                <form action="/admin/po/status/<%= po.id %>" method="POST" style="display:inline-block; margin:0;">
+                                                    <select name="status" onchange="this.form.submit()" style="padding:0.25rem 0.5rem; font-size:0.75rem; border:1px solid var(--color-gold-medium); border-radius:4px; background:#fff; font-weight:600; color:var(--color-charcoal); cursor:pointer;">
+                                                        <option value="Raised" <%= po.status === 'Raised' ? 'selected' : '' %>>Raised</option>
+                                                        <option value="Approved" <%= po.status === 'Approved' ? 'selected' : '' %>>Approved</option>
+                                                        <option value="Received" <%= po.status === 'Received' ? 'selected' : '' %>>Received</option>
+                                                    </select>
+                                                </form>
+                                            </td>
+                                            <td style="padding:1rem; text-align:center; font-size:0.82rem; color:var(--color-gray-dark);"><%= new Date(po.expected_date).toLocaleDateString() %></td>
+                                            <td style="padding:1rem; text-align:center; vertical-align:middle;">
+                                                <a href="/admin/po/pdf/<%= po.id %>" target="_blank" class="menu-item-btn" style="padding:0.3rem 0.6rem; font-size:0.72rem; background:var(--color-crimson); color:white; border-radius:4px; text-decoration:none; display:inline-flex; align-items:center; gap:0.2rem; font-weight:600; margin:0;">
+                                                    <i class="fa-solid fa-file-pdf"></i> Download PDF
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } %>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
 
@@ -1654,6 +1940,45 @@
         </div>
     </div>
 
+    <!-- Raise Purchase Order Modal -->
+    <div class="admin-modal-overlay" id="raisePOModal">
+        <div class="admin-modal" style="max-width: 500px;">
+            <button class="modal-close-btn" onclick="closeModal('raisePOModal')"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="form-title">Raise Artisan Purchase Order</h3>
+            <form action="/admin/po/add" method="POST" class="dashboard-form" style="display:flex; flex-direction:column; gap:1rem;">
+                <div class="form-group" style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Artisan / Weaver Name</label>
+                    <input type="text" name="supplier_name" required placeholder="e.g. Kanchipuram Silk Weavers Guild" style="width:100%; padding:0.5rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Supplier Email Address</label>
+                    <input type="email" name="supplier_email" placeholder="e.g. weavers@kanchipuram.org" style="width:100%; padding:0.5rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Itemized Material / Craft Description</label>
+                    <input type="text" name="item_description" required placeholder="e.g. 100 Yards Pure Mulberry Silk Zari Gold Warp Threads" style="width:100%; padding:0.5rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Quantity</label>
+                        <input type="number" name="quantity" required min="1" value="10" style="width:100%; padding:0.5rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                    </div>
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Unit Cost (INR)</label>
+                        <input type="number" name="unit_cost_inr" required min="1" value="1200" style="width:100%; padding:0.5rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem;">
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.8rem; font-weight:600; color:var(--color-charcoal);">Expected Delivery Date</label>
+                    <input type="date" name="expected_date" required style="width:100%; padding:0.5rem; border:1px solid var(--color-gold-medium); border-radius:4px; font-size:0.85rem; font-family:inherit;">
+                </div>
+                <button type="submit" class="add-new-btn" style="width:100%; padding:0.7rem; font-size:0.88rem; font-weight:600; margin-top:0.5rem;">
+                    Raise Purchase Order <i class="fa-solid fa-file-invoice"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- JS Controllers -->
     <script>
         // Switch Tab Navigation
@@ -1667,6 +1992,61 @@
 
             document.getElementById(tabName).classList.add('active');
             evt.currentTarget.classList.add('active');
+        }
+
+        // Inline Stock Level Adjustments
+        function adjustStock(id, diff) {
+            const input = document.getElementById('stock-input-' + id);
+            let val = parseInt(input.value, 10) || 0;
+            val += diff;
+            if (val < 0) val = 0;
+            input.value = val;
+        }
+
+        function updateStockInline(id) {
+            const input = document.getElementById('stock-input-' + id);
+            let val = parseInt(input.value, 10);
+            if (isNaN(val) || val < 0) {
+                input.value = 0;
+            }
+        }
+
+        function saveStockInline(id) {
+            const input = document.getElementById('stock-input-' + id);
+            const qty = parseInt(input.value, 10) || 0;
+            
+            fetch('/api/admin/products/stock/' + id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ stock_quantity: qty })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Stock successfully saved inline for ' + id + ' to ' + qty + ' units.');
+                    window.location.reload();
+                } else {
+                    alert('Failed to save stock: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Communication error updating stock levels.');
+            });
+        }
+
+        // Modal Open for Raise P.O.
+        function openRaisePOModal() {
+            // Pre-fill expected date to 14 days from now by default
+            const expectedDateInput = document.querySelector('#raisePOModal input[name="expected_date"]');
+            if (expectedDateInput) {
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + 14);
+                expectedDateInput.value = futureDate.toISOString().split('T')[0];
+            }
+            document.getElementById('raisePOModal').classList.add('active');
         }
 
         // Subcategory options matching category
@@ -1952,6 +2332,7 @@
                 btn.innerHTML = originalText;
                 console.error(err);
                 alert("Network error simulating recovery email.");
+            });
         }
 
         function toggleSimulator() {

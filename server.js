@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { generateInvoicePDF, sendInvoiceEmail } = require('./utils/document_helper');
+const { generateInvoicePDF, sendInvoiceEmail, generatePOPDF } = require('./utils/document_helper');
 const config = require('./config');
 
 const app = express();
@@ -1176,7 +1176,7 @@ app.post('/admin/login', (req, res) => {
     });
 });
 
-// Admin Dashboard Route with dynamic low stock metric
+// Admin Dashboard Route with dynamic low stock and ERP metrics
 app.get('/admin', checkAdminAuth, (req, res) => {
     const db = getDbConnection();
     
@@ -1189,26 +1189,34 @@ app.get('/admin', checkAdminAuth, (req, res) => {
                         db.all("SELECT * FROM atelier_bookings ORDER BY id DESC", [], (err, bookings) => {
                             db.all("SELECT * FROM newsletter_subscribers ORDER BY id DESC", [], (err, subscribers) => {
                                 db.all("SELECT * FROM abandoned_carts ORDER BY id DESC", [], (err, abandonedCarts) => {
-                                    db.close();
-                                    
-                                    const parsedProducts = products.map(p => ({
-                                        ...p,
-                                        specs: JSON.parse(p.specs || '{}')
-                                    }));
+                                    db.all("SELECT * FROM purchase_orders ORDER BY id DESC", [], (err, purchaseOrders) => {
+                                        db.close();
+                                        
+                                        const parsedProducts = products ? products.map(p => ({
+                                            ...p,
+                                            specs: JSON.parse(p.specs || '{}')
+                                        })) : [];
 
-                                    res.render('admin_dashboard', {
-                                        stats: {
-                                            order_count: stats.order_count || 0,
-                                            total_inr: stats.total_inr || 0,
-                                            total_usd: stats.total_usd || 0,
-                                            pending_bookings: bookingStats.booking_count || 0,
-                                            low_stock: lowStockStats.low_stock_count || 0
-                                        },
-                                        products: parsedProducts,
-                                        orders: orders || [],
-                                        bookings: bookings || [],
-                                        subscribers: subscribers || [],
-                                        abandonedCarts: abandonedCarts || []
+                                        const inventoryAssetValue = parsedProducts.reduce((acc, p) => acc + (p.price_inr * p.stock_quantity), 0);
+                                        const activePOValue = (purchaseOrders || []).reduce((acc, po) => po.status !== 'Received' ? acc + po.total_cost_inr : acc, 0);
+
+                                        res.render('admin_dashboard', {
+                                            stats: {
+                                                order_count: (stats && stats.order_count) || 0,
+                                                total_inr: (stats && stats.total_inr) || 0,
+                                                total_usd: (stats && stats.total_usd) || 0,
+                                                pending_bookings: (bookingStats && bookingStats.booking_count) || 0,
+                                                low_stock: (lowStockStats && lowStockStats.low_stock_count) || 0,
+                                                inventory_asset_value: inventoryAssetValue,
+                                                active_po_value: activePOValue
+                                            },
+                                            products: parsedProducts,
+                                            orders: orders || [],
+                                            bookings: bookings || [],
+                                            subscribers: subscribers || [],
+                                            abandonedCarts: abandonedCarts || [],
+                                            purchaseOrders: purchaseOrders || []
+                                        });
                                     });
                                 });
                             });
@@ -1382,6 +1390,182 @@ app.get('/admin/orders/invoice/:id', checkAdminAuth, (req, res) => {
         } else {
             return res.status(404).send("Invoice file was not found on our secure disks.");
         }
+    });
+});
+
+// Inline Stock Level Updates API
+app.post('/api/admin/products/stock/:id', checkAdminAuth, (req, res) => {
+    const productId = req.params.id;
+    const { stock_quantity } = req.body;
+    const qty = parseInt(stock_quantity, 10);
+    if (isNaN(qty) || qty < 0) {
+        return res.status(400).json({ success: false, error: 'Invalid stock quantity' });
+    }
+    const db = getDbConnection();
+    db.run('UPDATE products SET stock_quantity = ? WHERE id = ?', [qty, productId], function(err) {
+        db.close();
+        if (err) {
+            console.error('[Stock API] Error updating stock:', err.message);
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        return res.json({ success: true, stock_quantity: qty });
+    });
+});
+
+// Process and Insert a New Artisan Purchase Order
+app.post('/admin/po/add', checkAdminAuth, (req, res) => {
+    const { supplier_name, supplier_email, item_description, quantity, unit_cost_inr, expected_date } = req.body;
+    const qty = parseInt(quantity, 10) || 0;
+    const unitCost = parseInt(unit_cost_inr, 10) || 0;
+    const totalCost = qty * unitCost;
+    
+    const db = getDbConnection();
+    db.run(`
+        INSERT INTO purchase_orders (supplier_name, supplier_email, item_description, quantity, unit_cost_inr, total_cost_inr, status, expected_date)
+        VALUES (?, ?, ?, ?, ?, ?, 'Raised', ?)
+    `, [supplier_name, supplier_email, item_description, qty, unitCost, totalCost, expected_date], function(err) {
+        db.close();
+        if (err) {
+            console.error('[PO API] Error adding PO:', err.message);
+            return res.redirect('/admin?error=failed_to_add_po');
+        }
+        res.redirect('/admin#poTab');
+    });
+});
+
+// Stream compiled P.O. PDF to the browser
+app.get('/admin/po/pdf/:id', checkAdminAuth, (req, res) => {
+    const poId = req.params.id;
+    const db = getDbConnection();
+    db.get("SELECT * FROM purchase_orders WHERE id = ?", [poId], async (err, po) => {
+        db.close();
+        if (err || !po) {
+            return res.status(404).send("Purchase Order not found.");
+        }
+        try {
+            const relativePath = await generatePOPDF(po);
+            const absolutePath = path.join(__dirname, relativePath);
+            if (fs.existsSync(absolutePath)) {
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `inline; filename="YDH-PO-${poId}.pdf"`);
+                return res.sendFile(absolutePath);
+            } else {
+                return res.status(504).send("Compiled P.O. PDF could not be saved.");
+            }
+        } catch (pdfErr) {
+            console.error('[PO PDF] Error generating PDF:', pdfErr.message);
+            return res.status(500).send("Error compiling P.O. PDF.");
+        }
+    });
+});
+
+// Update Artisan Purchase Order Fulfillment Status
+app.post('/admin/po/status/:id', checkAdminAuth, (req, res) => {
+    const poId = req.params.id;
+    const { status } = req.body;
+    const db = getDbConnection();
+    db.run("UPDATE purchase_orders SET status = ? WHERE id = ?", [status, poId], function(err) {
+        db.close();
+        if (err) {
+            console.error('[PO Status API] Error updating status:', err.message);
+        }
+        res.redirect('/admin#poTab');
+    });
+});
+
+// Manually Compile Custom Showroom Customer Invoices
+app.post('/admin/invoice/manual', checkAdminAuth, (req, res) => {
+    const { customer_name, customer_email, customer_phone, shipping_address, product_id, quantity } = req.body;
+    const qty = parseInt(quantity, 10) || 1;
+    
+    if (!customer_name || !customer_email || !customer_phone || !shipping_address || !product_id) {
+        return res.status(400).send("All customer and product fields are required.");
+    }
+    
+    const db = getDbConnection();
+    db.get("SELECT * FROM products WHERE id = ?", [product_id], (err, product) => {
+        if (err || !product) {
+            db.close();
+            return res.status(404).send("Product not found in the catalog.");
+        }
+        
+        if (product.stock_quantity < qty) {
+            db.close();
+            return res.status(400).send(`Insufficient stock. Available: ${product.stock_quantity}, Requested: ${qty}`);
+        }
+        
+        const totalINR = product.price_inr * qty;
+        const totalUSD = product.price_usd * qty;
+        
+        db.serialize(() => {
+            db.run("BEGIN TRANSACTION");
+            
+            db.run(`
+                INSERT INTO orders (customer_name, customer_email, customer_phone, shipping_address, total_price_inr, total_price_usd, status)
+                VALUES (?, ?, ?, ?, ?, ?, 'Success')
+            `, [customer_name, customer_email, customer_phone, shipping_address, totalINR, totalUSD], function (err) {
+                if (err) {
+                    db.run("ROLLBACK");
+                    db.close();
+                    console.error("[Manual Invoice] Order insert failed:", err.message);
+                    return res.status(500).send("Failed to log order.");
+                }
+                
+                const orderId = this.lastID;
+                
+                db.run(`
+                    INSERT INTO order_items (order_id, product_id, quantity, price_inr, price_usd)
+                    VALUES (?, ?, ?, ?, ?)
+                `, [orderId, product_id, qty, product.price_inr, product.price_usd], function (err) {
+                    if (err) {
+                        db.run("ROLLBACK");
+                        db.close();
+                        console.error("[Manual Invoice] Order item insert failed:", err.message);
+                        return res.status(500).send("Failed to log order items.");
+                    }
+                    
+                    db.run(`
+                        UPDATE products
+                        SET stock_quantity = stock_quantity - ?
+                        WHERE id = ?
+                    `, [qty, product_id], function(err) {
+                        if (err) {
+                            db.run("ROLLBACK");
+                            db.close();
+                            console.error("[Manual Invoice] Stock update failed:", err.message);
+                            return res.status(500).send("Failed to update stock levels.");
+                        }
+                        
+                        db.run("COMMIT", () => {
+                            db.close();
+                            
+                            // Trigger post-checkout documents asynchronously
+                            const orderObj = {
+                                id: orderId,
+                                customer_name,
+                                customer_email,
+                                customer_phone,
+                                shipping_address,
+                                total_price_inr: totalINR,
+                                total_price_usd: totalUSD,
+                                created_at: new Date().toISOString()
+                            };
+                            const itemsArr = [{
+                                product_id,
+                                name: product.name,
+                                type: product.type,
+                                quantity: qty,
+                                price_inr: product.price_inr,
+                                price_usd: product.price_usd
+                            }];
+                            
+                            processPostCheckoutDocs(orderId, orderObj, itemsArr);
+                            res.redirect('/admin#ordersTab');
+                        });
+                    });
+                });
+            });
+        });
     });
 });
 

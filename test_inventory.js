@@ -114,17 +114,26 @@ function runTests() {
 
                 // Query stock again to verify decrement occurred
                 console.log("\nAssertion 4: Verifying stock level decremented in database...");
-                db.get("SELECT stock_quantity FROM products WHERE id = 's1'", [], (err, row) => {
-                    assert.ifError(err);
-                    console.log(`- Updated s1 Stock Level in DB: ${row.stock_quantity} (Expected: 2)`);
-                    assert.strictEqual(row.stock_quantity, 2, "s1 stock should have decremented from 3 to 2!");
-                    console.log("✅ Inventory level successfully decremented.");
+                setTimeout(() => {
+                    const checkDb = new sqlite3.Database(DB_PATH, sqlite3.OPEN_READONLY, (checkErr) => {
+                        if (checkErr) {
+                            console.error(checkErr);
+                            process.exit(1);
+                        }
+                        checkDb.get("SELECT stock_quantity FROM products WHERE id = 's1'", [], (err, row) => {
+                            checkDb.close();
+                            assert.ifError(err);
+                            console.log(`- Updated s1 Stock Level in DB: ${row.stock_quantity} (Expected: 2)`);
+                            assert.strictEqual(row.stock_quantity, 2, "s1 stock should have decremented from 3 to 2!");
+                            console.log("✅ Inventory level successfully decremented.");
 
-                    console.log("\n=================================================");
-                    console.log(" 🎉 All Inventory System Assertions Passed! ");
-                    console.log("=================================================");
-                    db.close();
-                });
+                            console.log("\n=================================================");
+                            console.log(" 🎉 All Inventory System Assertions Passed! ");
+                            console.log("=================================================");
+                            db.close();
+                        });
+                    });
+                }, 1000);
 
             } catch (err) {
                 console.error("❌ API assertions failed because server is offline or connection refused!");

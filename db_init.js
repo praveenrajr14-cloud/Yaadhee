@@ -102,6 +102,21 @@ function initDb() {
                 recovered INTEGER DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
+        `);
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS purchase_orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                supplier_name TEXT NOT NULL,
+                supplier_email TEXT,
+                item_description TEXT NOT NULL,
+                quantity INTEGER NOT NULL,
+                unit_cost_inr INTEGER NOT NULL,
+                total_cost_inr INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'Raised',
+                expected_date DATE NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
         `, () => {
             // This callback runs after the schema has been set up successfully.
             // Let's seed now!
@@ -111,6 +126,41 @@ function initDb() {
 }
 
 function seedData(db) {
+    // Seed Sample Purchase Orders
+    db.get('SELECT COUNT(id) AS count FROM purchase_orders', [], (err, row) => {
+        if (!err && row && row.count === 0) {
+            const samplePOs = [
+                {
+                    supplier_name: "Kanchipuram Silk Weavers Guild",
+                    supplier_email: "weavers@kanchipuram.org",
+                    item_description: "100 Yards Pure Mulberry Silk Zari Gold Warp Threads",
+                    quantity: 100,
+                    unit_cost_inr: 1200,
+                    total_cost_inr: 120000,
+                    status: "Raised",
+                    expected_date: "2026-06-15"
+                },
+                {
+                    supplier_name: "Kovai Gold Refiners & Smith Curators",
+                    supplier_email: "smiths@kovai.in",
+                    item_description: "Raw Uncut Polki Diamonds & 22k Sacred Temple Gold Plates",
+                    quantity: 5,
+                    unit_cost_inr: 45000,
+                    total_cost_inr: 225000,
+                    status: "Approved",
+                    expected_date: "2026-06-20"
+                }
+            ];
+            samplePOs.forEach(po => {
+                db.run(`
+                    INSERT INTO purchase_orders (supplier_name, supplier_email, item_description, quantity, unit_cost_inr, total_cost_inr, status, expected_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                `, [po.supplier_name, po.supplier_email, po.item_description, po.quantity, po.unit_cost_inr, po.total_cost_inr, po.status, po.expected_date]);
+            });
+            console.log("Sample Artisan Purchase Orders seeded successfully.");
+        }
+    });
+
     const adminUser = 'admin';
     const adminPass = 'YadheeRoyal2026!';
     const salt = bcrypt.genSaltSync(10);

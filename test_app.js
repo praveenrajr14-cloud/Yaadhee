@@ -35,7 +35,7 @@ function runTests() {
         db.all("SELECT * FROM products WHERE is_active = 1", [], (err, products) => {
             assert.ifError(err);
             console.log(`Seeded active products count: ${products.length}`);
-            assert.strictEqual(products.length, 6, "Seeded product count should be 6!");
+            assert.strictEqual(products.length, 7, "Seeded product count should be 7!");
             
             // Check properties of s1
             const s1 = products.find(p => p.id === 's1');
