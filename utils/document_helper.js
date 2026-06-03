@@ -41,21 +41,21 @@ function generateInvoicePDF(order, items) {
             const colorGrayLight = '#DDD9D2';
 
             // 1. Header Branding Centered (Text Font Only)
-            // 1. Header Branding Centered (Text Font Only)
             const pinyonFontPath = path.join(dataDir, 'PinyonScript-Regular.ttf');
             if (fs.existsSync(pinyonFontPath)) {
                 doc.registerFont('PinyonScript', pinyonFontPath);
                 doc.font('PinyonScript')
-                   .fontSize(36)
+                   .fontSize(42)
                    .fillColor(colorCrimson)
                    .text('Yadhee', { align: 'center' });
+                doc.y = 95;
             } else {
                 doc.font('Times-BoldItalic')
                    .fontSize(28)
                    .fillColor(colorCrimson)
                    .text('Yadhee', { align: 'center', characterSpacing: 1 });
+                doc.y = 70;
             }
-            doc.y = 65;
 
             doc.font('Times-Italic')
                .fontSize(9)
@@ -461,21 +461,21 @@ function generatePOPDF(po) {
             const colorGrayLight = '#DDD9D2';
 
             // 1. Header Branding Centered
-            // 1. Header Branding Centered
             const pinyonFontPathPO = path.join(dataDir, 'PinyonScript-Regular.ttf');
             if (fs.existsSync(pinyonFontPathPO)) {
                 doc.registerFont('PinyonScript', pinyonFontPathPO);
                 doc.font('PinyonScript')
-                   .fontSize(36)
+                   .fontSize(42)
                    .fillColor(colorCrimson)
                    .text('Yadhee', { align: 'center' });
+                doc.y = 95;
             } else {
                 doc.font('Times-BoldItalic')
                    .fontSize(28)
                    .fillColor(colorCrimson)
                    .text('Yadhee', { align: 'center', characterSpacing: 1 });
+                doc.y = 70;
             }
-            doc.y = 65;
 
             doc.font('Times-Italic')
                .fontSize(9)
