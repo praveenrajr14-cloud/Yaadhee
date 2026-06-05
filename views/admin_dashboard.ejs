@@ -14,7 +14,7 @@
     <style>
         :root {
             --color-ivory: #FDFBF7;
-            --color-cream-sidebar: #FAF8F5;
+            --color-cream-sidebar: rgba(250, 248, 245, 0.85);
             --color-white: #FFFFFF;
             --color-gold: #C5A059;
             --color-gold-bright: #D4AF37;
@@ -26,12 +26,27 @@
             --color-gray-light: #F4F1EC;
             --color-gray-medium: #DDD9D2;
             --color-gray-dark: #8E877D;
+            --color-border: #EADCC9;
             --font-heading: 'Cormorant Garamond', serif;
             --font-accent: 'Cinzel', serif;
             --font-body: 'Montserrat', sans-serif;
             --transition-smooth: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             --border-gold-subtle: 1px solid rgba(197, 160, 89, 0.25);
             --border-gold-strong: 1px solid rgba(197, 160, 89, 0.5);
+        }
+
+        /* Dark Theme Variables Override */
+        body.dark-theme {
+            --color-ivory: #120A0B;
+            --color-cream-sidebar: rgba(28, 19, 20, 0.85);
+            --color-white: #1C1314;
+            --color-charcoal: #F4F1EC;
+            --color-gray-light: #2A2021;
+            --color-gray-medium: #3A2F30;
+            --color-gray-dark: #A59E95;
+            --color-border: #3A2F30;
+            --border-gold-subtle: 1px solid rgba(197, 160, 89, 0.15);
+            --border-gold-strong: 1px solid rgba(197, 160, 89, 0.35);
         }
 
         * {
@@ -48,6 +63,7 @@
             font-weight: 300;
             line-height: 1.6;
             overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
         /* Complete Dashboard Layout wrapper */
@@ -60,13 +76,16 @@
         .sidebar {
             width: 280px;
             background-color: var(--color-cream-sidebar);
-            border-right: 1px solid #EADCC9;
+            border-right: 1px solid var(--color-border);
             display: flex;
             flex-direction: column;
             padding: 2.5rem 0;
             position: fixed;
             height: 100vh;
             z-index: 100;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            transition: var(--transition-smooth);
         }
 
         .sidebar-logo-container {
@@ -198,7 +217,7 @@
         /* Top Bar */
         .topbar {
             height: 90px;
-            border-bottom: 1px solid #EADCC9;
+            border-bottom: 1px solid var(--color-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -207,17 +226,19 @@
             top: 0;
             background-color: var(--color-white);
             z-index: 90;
+            transition: background-color 0.4s ease, border-bottom 0.4s ease;
         }
 
         .search-box {
             display: flex;
             align-items: center;
             gap: 0.8rem;
-            border: 1px solid #E5E0D8;
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             padding: 0.6rem 1.2rem;
             width: 320px;
             background-color: var(--color-white);
+            transition: background-color 0.4s ease, border 0.4s ease;
         }
 
         .search-box i {
@@ -278,6 +299,8 @@
             padding: 3rem 3.5rem;
             padding-bottom: 6rem;
             flex-grow: 1;
+            background-color: var(--color-ivory);
+            transition: background-color 0.4s ease;
         }
 
         .tab-panel {
@@ -341,13 +364,43 @@
 
         .sales-overview-card {
             background-color: var(--color-white);
-            border: 1px solid #EADCC9;
+            border: 1px solid var(--color-border);
             border-radius: 12px;
             padding: 1.2rem 1.5rem;
             box-shadow: 0 4px 20px rgba(0,0,0,0.01);
             display: flex;
             flex-direction: column;
             gap: 0.6rem;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .sales-overview-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-crimson), var(--color-gold-bright), var(--color-crimson));
+            opacity: 0.8;
+        }
+
+        .sales-overview-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(197, 160, 89, 0.04);
+            border-color: var(--color-gold);
+        }
+
+        /* SVG Interactive points */
+        .interactive-dot {
+            transition: r 0.3s ease, fill 0.3s ease;
+            cursor: pointer;
+        }
+        .interactive-dot:hover {
+            r: 7 !important;
+            fill: var(--color-crimson) !important;
         }
 
         .overview-title {
@@ -452,6 +505,11 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .masterpiece-card:hover .card-media img {
+            transform: scale(1.08);
         }
 
         .card-info {
@@ -1000,6 +1058,14 @@
     </style>
 </head>
 <body>
+    <script>
+        (function() {
+            const persistedTheme = localStorage.getItem('adminTheme');
+            if (persistedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+        })();
+    </script>
 
     <div class="dashboard-wrapper">
         
@@ -1067,6 +1133,9 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="dashboardSearch" placeholder="Search Masterpieces..." onkeyup="filterCardsGrid()">
                 </div>
+                <button type="button" id="themeToggleButton" onclick="toggleAdminTheme()" style="background: none; border: 1px solid var(--color-border); padding: 0.5rem 0.8rem; border-radius: 20px; color: var(--color-gold-bright); cursor: pointer; font-size: 0.8rem; transition: var(--transition-smooth); margin-left: auto; margin-right: 1.5rem; display: flex; align-items: center; gap: 0.4rem; font-family: var(--font-body); font-weight: 600;">
+                    <i class="fa-solid fa-moon"></i> <span>Dark Theme</span>
+                </button>
                 
                 <div class="profile-section">
                     <div class="profile-text">
@@ -1309,11 +1378,11 @@
                                     <line x1="0" y1="160" x2="400" y2="160" stroke="#F1ECE1" stroke-width="1"></line>
                                     <path d="M 0 170 Q 80 120 160 145 T 320 60 L 400 95 L 400 200 L 0 200 Z" fill="url(#areaGradient)"></path>
                                     <path d="M 0 170 Q 80 120 160 145 T 320 60 L 400 95" fill="none" stroke="var(--color-crimson)" stroke-width="3"></path>
-                                    <circle cx="80" cy="130" r="4" fill="var(--color-gold-bright)"></circle>
-                                    <circle cx="160" cy="145" r="4" fill="var(--color-gold-bright)"></circle>
-                                    <circle cx="240" cy="90" r="4" fill="var(--color-gold-bright)"></circle>
-                                    <circle cx="320" cy="60" r="4" fill="var(--color-gold-bright)"></circle>
-                                    <circle cx="400" cy="95" r="4" fill="var(--color-gold-bright)"></circle>
+                                    <g class="chart-point"><title>Jan: ₹1,80,000</title><circle cx="80" cy="130" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
+                                    <g class="chart-point"><title>Feb: ₹1,55,000</title><circle cx="160" cy="145" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
+                                    <g class="chart-point"><title>Mar: ₹2,20,000</title><circle cx="240" cy="90" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
+                                    <g class="chart-point"><title>Apr: ₹2,80,000</title><circle cx="320" cy="60" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
+                                    <g class="chart-point"><title>May: ₹2,10,000</title><circle cx="400" cy="95" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
                                 </svg>
                                 <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--color-gray-dark); margin-top:0.3rem;">
                                     <span>Jan</span>
@@ -1981,6 +2050,33 @@
 
     <!-- JS Controllers -->
     <script>
+        // Dark Theme Controller
+        function toggleAdminTheme() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('adminTheme', isDark ? 'dark' : 'light');
+            updateThemeButtonUI(isDark);
+        }
+
+        function updateThemeButtonUI(isDark) {
+            const btn = document.getElementById('themeToggleButton');
+            if (!btn) return;
+            const icon = btn.querySelector('i');
+            const label = btn.querySelector('span');
+            if (isDark) {
+                if (icon) icon.className = 'fa-solid fa-sun';
+                if (label) label.textContent = 'Light Theme';
+            } else {
+                if (icon) icon.className = 'fa-solid fa-moon';
+                if (label) label.textContent = 'Dark Theme';
+            }
+        }
+
+        // Initialize theme button UI on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = document.body.classList.contains('dark-theme');
+            updateThemeButtonUI(isDark);
+        });
+
         // Switch Tab Navigation
         function switchNavTab(evt, tabName) {
             evt.preventDefault();
