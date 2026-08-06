@@ -1,46 +1,111 @@
 <%- include('partials/header', { activePage: 'login', title: 'Login | Yadhee' }) %>
 
-<div class="auth-page-container">
-    <div class="auth-card-backdrop"></div>
-    <div class="auth-card reveal-on-scroll active">
-        <span class="section-accent text-center">User Access</span>
-        <h2 class="auth-title text-center">Account Login</h2>
-        <p class="auth-subtitle text-center">Log in to manage your cart, view your order history, and edit your profile details.</p>
-        
+<div class="auth-page-container" style="position: relative; overflow: hidden;">
+    <!-- Glowing background blobs to make glassmorphism pop out -->
+    <div class="auth-glow-blob blob-1"></div>
+    <div class="auth-glow-blob blob-2"></div>
+
+    <div class="auth-card">
+        <!-- Top header row with title and close X button -->
+        <div class="auth-header-row">
+            <h2 class="auth-title-clean">Sign In</h2>
+            <a href="/" class="auth-close-circle" aria-label="Close Login">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+
+        <!-- Tab switches: Email (active), Phone -->
+        <div class="auth-tabs-row">
+            <span class="auth-tab active" id="tabEmail">Email</span>
+            <span class="auth-tab" id="tabPhone">Phone</span>
+        </div>
+
         <% if (error) { %>
-            <div class="auth-error-box">
-                <i class="fa-solid fa-circle-exclamation gold-text"></i>
+            <div class="auth-error-box-clean">
+                <i class="fa-solid fa-circle-exclamation"></i>
                 <span><%= error %></span>
             </div>
         <% } %>
 
-        <form action="/login" method="POST" class="auth-luxury-form">
-            <div class="auth-form-group">
-                <label for="usernameOrEmail">Username or Email</label>
-                <div class="auth-input-wrapper">
-                    <i class="fa-regular fa-envelope auth-field-icon"></i>
-                    <input type="text" id="usernameOrEmail" name="usernameOrEmail" required placeholder="name@domain.com" autocomplete="username">
+        <!-- Login Form stacked inputs -->
+        <form action="/login" method="POST" class="auth-compact-form">
+            <!-- Email Inputs Container -->
+            <div id="emailInputs" style="display: block; width: 100%;">
+                <div class="auth-compact-group" style="margin-bottom: 0.75rem;">
+                    <input type="text" id="usernameOrEmail" name="usernameOrEmail" required placeholder="Email or Username" autocomplete="username">
+                </div>
+
+                <div class="auth-compact-group">
+                    <input type="password" id="password" name="password" required placeholder="Password" autocomplete="current-password">
                 </div>
             </div>
 
-            <div class="auth-form-group">
-                <label for="password">Password</label>
-                <div class="auth-input-wrapper">
-                    <i class="fa-solid fa-lock auth-field-icon"></i>
-                    <input type="password" id="password" name="password" required placeholder="•••••••••••••••" autocomplete="current-password">
+            <!-- Phone Inputs Container (Initially Hidden) -->
+            <div id="phoneInputs" style="display: none; width: 100%;">
+                <div class="auth-compact-group">
+                    <input type="text" id="phone" name="phone" placeholder="Phone Number" autocomplete="tel">
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary auth-submit-btn">
-                Login <i class="fa-solid fa-arrow-right-long"></i>
+            <div class="auth-divider-row">
+                <div class="divider-line"></div>
+                <span class="divider-text">OR</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <button type="submit" id="submitBtn" class="auth-blue-btn">
+                <i class="fa-solid fa-wallet"></i> Connect Account & Login
             </button>
         </form>
 
-        <div class="auth-footer-actions">
-            <p>New customer? <a href="/register" class="auth-hyperlink">Create Account <i class="fa-solid fa-user-plus"></i></a></p>
-            <a href="/" class="auth-back-link"><i class="fa-solid fa-arrow-left-long"></i> Return to Storefront</a>
+        <div class="auth-compact-footer">
+            <p>New customer? <a href="/register" class="auth-blue-link">Create Account</a></p>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabEmail = document.getElementById('tabEmail');
+        const tabPhone = document.getElementById('tabPhone');
+        const emailInputs = document.getElementById('emailInputs');
+        const phoneInputs = document.getElementById('phoneInputs');
+        
+        const inputUsername = document.getElementById('usernameOrEmail');
+        const inputPassword = document.getElementById('password');
+        const inputPhone = document.getElementById('phone');
+        
+        const submitBtn = document.getElementById('submitBtn');
+
+        tabEmail.addEventListener('click', () => {
+            tabEmail.classList.add('active');
+            tabPhone.classList.remove('active');
+            emailInputs.style.display = 'block';
+            phoneInputs.style.display = 'none';
+            
+            inputUsername.required = true;
+            inputPassword.required = true;
+            inputPhone.required = false;
+            inputPhone.value = '';
+            
+            submitBtn.innerHTML = '<i class="fa-solid fa-wallet"></i> Connect Account & Login';
+        });
+
+        tabPhone.addEventListener('click', () => {
+            tabPhone.classList.add('active');
+            tabEmail.classList.remove('active');
+            emailInputs.style.display = 'none';
+            phoneInputs.style.display = 'block';
+            
+            inputUsername.required = false;
+            inputPassword.required = false;
+            inputPhone.required = true;
+            inputUsername.value = '';
+            inputPassword.value = '';
+            
+            submitBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Verify Phone & Login';
+        });
+    });
+</script>
 
 <%- include('partials/footer') %>

@@ -1,0 +1,183 @@
+<%- include('partials/header', { activePage: 'checkout', title: 'Secure Checkout | Yadhee Luxury Heritage' }) %>
+
+<div class="checkout-page-banner" style="background-image: linear-gradient(rgba(30, 2, 6, 0.88), rgba(30, 2, 6, 0.7)), url('assets/hero_saree.png');">
+    <div class="banner-content text-center">
+        <span class="section-accent">Secure Gateway</span>
+        <h1 class="page-main-title">Secured Checkout</h1>
+        <p class="banner-subtitle">Complete your transaction via our verified Insured Escrow Protocol.</p>
+    </div>
+</div>
+
+<div class="checkout-page-container">
+    <div class="section-container">
+        <!-- Main Split Grid -->
+        <div class="checkout-page-grid" id="checkoutPageGrid" style="display: none;">
+            
+            <!-- Left Side: Shipping & Secure Payment Curation Form -->
+            <div class="checkout-form-column">
+                <form id="checkoutPageForm" class="checkout-page-luxury-form">
+                    
+                    <!-- Section A: Logistics -->
+                    <div class="checkout-form-section">
+                        <h3 class="section-sub-title"><i class="fa-solid fa-truck-fast"></i> 1. Shipping Details</h3>
+                        <p class="section-desc-note">Logistics are insured and dispatched under sealed vault crates.</p>
+                        
+                        <div class="form-row-two">
+                            <div class="form-group-lux">
+                                <label for="checkoutPageName">Recipient Full Name *</label>
+                                <div class="input-lux-wrapper">
+                                    <i class="fa-regular fa-user input-icon-lux"></i>
+                                    <input type="text" id="checkoutPageName" required placeholder="Full Name..." value="<%= (typeof user !== 'undefined' && user) ? user.username : '' %>">
+                                </div>
+                            </div>
+                            <div class="form-group-lux">
+                                <label for="checkoutPageEmail">Email Address *</label>
+                                <div class="input-lux-wrapper">
+                                    <i class="fa-regular fa-envelope input-icon-lux"></i>
+                                    <input type="email" id="checkoutPageEmail" required placeholder="name@domain.com" value="<%= (typeof user !== 'undefined' && user) ? user.email : '' %>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-lux">
+                            <label for="checkoutPagePhone">Phone Number *</label>
+                            <div class="input-lux-wrapper">
+                                <i class="fa-solid fa-phone input-icon-lux"></i>
+                                <input type="tel" id="checkoutPagePhone" required placeholder="+91 ..." value="<%= (typeof user !== 'undefined' && user) ? user.phone : '' %>">
+                            </div>
+                        </div>
+
+                        <div class="form-group-lux">
+                            <label for="checkoutPageAddress">Shipping Address *</label>
+                            <div class="input-lux-wrapper textarea-lux-wrapper">
+                                <i class="fa-solid fa-map-location-dot input-icon-lux"></i>
+                                <textarea id="checkoutPageAddress" rows="3" required placeholder="Full shipping address, suite, city, state, country, zip..."><%= (typeof user !== 'undefined' && user) ? user.address : '' %></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section B: Escrow Billing details -->
+                    <div class="checkout-form-section" style="margin-top: 2rem;">
+                        <h3 class="section-sub-title"><i class="fa-solid fa-shield-halved"></i> 2. Insured Escrow Payment</h3>
+                        <p class="section-desc-note">Payments are processed through a multi-sig certified secure vault.</p>
+
+                        <div class="form-group-lux">
+                            <label for="cardPageNum">Credit / Debit Card Number *</label>
+                            <div class="input-lux-wrapper">
+                                <i class="fa-solid fa-credit-card input-icon-lux"></i>
+                                <input type="text" id="cardPageNum" placeholder="4111 2222 3333 4444" pattern="\\d{16}" title="16-digit card number" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row-two">
+                            <div class="form-group-lux">
+                                <label for="cardPageExpiry">Expiry Date *</label>
+                                <div class="input-lux-wrapper">
+                                    <i class="fa-regular fa-calendar input-icon-lux"></i>
+                                    <input type="text" id="cardPageExpiry" placeholder="MM/YY" pattern="\\d{2}/\\d{2}" title="MM/YY format" required>
+                                </div>
+                            </div>
+                            <div class="form-group-lux">
+                                <label for="cardPageCvv">Security CVV *</label>
+                                <div class="input-lux-wrapper">
+                                    <i class="fa-solid fa-lock input-icon-lux"></i>
+                                    <input type="password" id="cardPageCvv" placeholder="***" pattern="\\d{3}" title="3-digit CVV" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DEV FORCE SETTING -->
+                        <div class="dev-gateway-config">
+                            <label for="devForcePageOutcome"><i class="fa-solid fa-code"></i> [DEV MODE] FORCE ESCROW OUTCOME</label>
+                            <select id="devForcePageOutcome">
+                                <option value="success">Escrow Simulation: SUCCESS (Log Order &amp; PDF)</option>
+                                <option value="failure">Escrow Simulation: DECLINE (Block &amp; Log Abandoned Cart)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary submit-secured-order-btn" style="margin-top: 2rem; width: 100%;">
+                        Commit Sovereign Order <i class="fa-solid fa-crown"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Side: Order summary details card -->
+            <div class="checkout-summary-column">
+                <div class="checkout-items-card">
+                    <h3 class="summary-card-title">Order Summary</h3>
+                    
+                    <!-- Items sublist -->
+                    <div class="summary-items-list" id="checkoutPageItemsList">
+                        <!-- Loaded dynamically via script.js -->
+                    </div>
+
+                    <!-- Coupon code block -->
+                    <div class="checkout-coupon-section" style="padding: 1.2rem 0; border-bottom: 1px dashed rgba(197, 160, 89, 0.2); margin-bottom: 1rem;">
+                        <label for="couponCodeInput" style="display: block; font-family: var(--font-accent); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-charcoal); margin-bottom: 0.5rem; font-weight: 600;">Apply Promo / Voucher Code</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="couponCodeInput" placeholder="ENTER CODE" style="flex: 1; height: 40px; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 20px; padding: 0 1rem; font-family: var(--font-body); font-size: 0.8rem; background: rgba(255,255,255,0.5); text-transform: uppercase; color: var(--color-charcoal); font-weight: 600;">
+                            <button type="button" id="applyCouponBtn" style="height: 40px; padding: 0 1.2rem; background: var(--color-gold); border: none; border-radius: 20px; color: #ffffff; font-family: var(--font-accent); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; cursor: pointer; text-transform: uppercase; transition: all 0.3s;">Apply</button>
+                        </div>
+                        <div id="couponStatusMessage" style="font-size: 0.72rem; margin-top: 0.4rem; font-weight: 500; display: none;"></div>
+                    </div>
+
+                    <!-- Breakdown -->
+                    <div class="summary-calculation-lines">
+                        <div class="calc-line">
+                            <span class="calc-label">Subtotal</span>
+                            <span class="calc-val" id="checkoutPageSubtotal">₹0</span>
+                        </div>
+                        <div class="calc-line discount-line">
+                            <span class="calc-label"><i class="fa-solid fa-gift"></i> Sovereign Discount (5%)</span>
+                            <span class="calc-val" id="checkoutPageDiscount">-₹0</span>
+                        </div>
+                        <!-- Coupon Discount line -->
+                        <div class="calc-line coupon-discount-line" id="checkoutPageCouponRow" style="display: none; color: var(--color-crimson);">
+                            <span class="calc-label"><i class="fa-solid fa-tag"></i> Coupon Discount (<span id="couponCodeLabel">NONE</span>)</span>
+                            <span class="calc-val" id="checkoutPageCouponDiscount">-₹0</span>
+                        </div>
+                        <hr class="calc-divider">
+                        <div class="calc-line total-line">
+                            <span class="calc-label">Secure Total</span>
+                            <div class="total-price-box">
+                                <span class="calc-val main-total" id="checkoutPageTotal">₹0</span>
+                                <span class="usd-price" id="checkoutPageTotalUSD">$0 USD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safety Badges -->
+                    <div class="security-assurance-box">
+                        <div class="assurance-item">
+                            <i class="fa-solid fa-truck-ramp-box"></i>
+                            <span>Insured Delivery</span>
+                        </div>
+                        <div class="assurance-item">
+                            <i class="fa-solid fa-certificate"></i>
+                            <span>BIS Gold Hallmark / Silk Mark</span>
+                        </div>
+                        <div class="assurance-item">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>Secure Escrow Exchange</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Empty Cart Fallback -->
+        <div class="checkout-page-empty-state" id="checkoutPageEmpty" style="display: block;">
+            <i class="fa-solid fa-bag-shopping empty-icon"></i>
+            <h2>Cannot Proceed to Checkout</h2>
+            <p>Your shopping bag is empty. Please add items to your cart before proceeding to checkout.</p>
+            <div class="empty-actions">
+                <a href="/sarees" class="btn btn-primary">Browse Weaves</a>
+                <a href="/" class="btn btn-secondary">Return Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

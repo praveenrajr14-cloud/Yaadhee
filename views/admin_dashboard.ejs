@@ -13,40 +13,46 @@
     
     <style>
         :root {
-            --color-ivory: #FDFBF7;
-            --color-cream-sidebar: rgba(250, 248, 245, 0.85);
-            --color-white: #FFFFFF;
-            --color-gold: #C5A059;
-            --color-gold-bright: #D4AF37;
-            --color-gold-pale: #F1E5CB;
-            --color-crimson: #7A0C1E;
-            --color-crimson-deep: #5E0611;
-            --color-dark-ruby: #1E0206;
-            --color-charcoal: #2A2425;
-            --color-gray-light: #F4F1EC;
-            --color-gray-medium: #DDD9D2;
-            --color-gray-dark: #8E877D;
-            --color-border: #EADCC9;
-            --font-heading: 'Cormorant Garamond', serif;
-            --font-accent: 'Cinzel', serif;
-            --font-body: 'Montserrat', sans-serif;
-            --transition-smooth: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            --border-gold-subtle: 1px solid rgba(197, 160, 89, 0.25);
-            --border-gold-strong: 1px solid rgba(197, 160, 89, 0.5);
+            --color-ivory: #faf8f5; /* Clean light ivory backdrop */
+            --color-cream-sidebar: #ffffff; /* White sidebar */
+            --color-white: #ffffff;
+            --color-gold: #c5a059; /* Brand Gold */
+            --color-gold-bright: #b38e4b;
+            --color-gold-pale: rgba(197, 160, 89, 0.08);
+            --color-crimson: #7a0c1e; /* Brand Crimson */
+            --color-crimson-deep: #5e0611;
+            --color-dark-ruby: #1e0206; /* Dark Ruby */
+            --color-charcoal: #201114; /* Dark maroon-charcoal for readability */
+            --color-gray-light: #f7f2f3; /* Soft rose-ivory */
+            --color-gray-medium: #ebd8db; /* Soft rose-gray borders */
+            --color-gray-dark: #8c6267; /* Dusty rose-maroon for subtexts */
+            --color-border: #ebd8db;
+            --font-heading: 'Outfit', sans-serif;
+            --font-accent: 'Outfit', sans-serif;
+            --font-body: 'Outfit', sans-serif;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-gold-subtle: 1px solid #ebd8db;
+            --border-gold-strong: 1px solid #c5a059;
         }
 
         /* Dark Theme Variables Override */
         body.dark-theme {
-            --color-ivory: #120A0B;
-            --color-cream-sidebar: rgba(28, 19, 20, 0.85);
-            --color-white: #1C1314;
-            --color-charcoal: #F4F1EC;
-            --color-gray-light: #2A2021;
-            --color-gray-medium: #3A2F30;
-            --color-gray-dark: #A59E95;
-            --color-border: #3A2F30;
-            --border-gold-subtle: 1px solid rgba(197, 160, 89, 0.15);
-            --border-gold-strong: 1px solid rgba(197, 160, 89, 0.35);
+            --color-ivory: #150104; /* Very dark ruby */
+            --color-cream-sidebar: #1e0206; /* Dark ruby sidebar */
+            --color-white: #1e0206;
+            --color-gold: #c5a059;
+            --color-gold-bright: #d4af37;
+            --color-gold-pale: rgba(197, 160, 89, 0.15);
+            --color-crimson: #9c1026;
+            --color-crimson-deep: #7a0c1e;
+            --color-dark-ruby: #0c0002;
+            --color-charcoal: #faf8f5;
+            --color-gray-light: #150104;
+            --color-gray-medium: #2e080d;
+            --color-gray-dark: #b58d92; /* Dusty rose-maroon for dark subtexts */
+            --color-border: #2e080d;
+            --border-gold-subtle: 1px solid #2e080d;
+            --border-gold-strong: 1px solid #c5a059;
         }
 
         * {
@@ -90,42 +96,49 @@
 
         .sidebar-logo-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 0.8rem;
-            padding: 0 2rem;
-            margin-bottom: 3.5rem;
+            justify-content: center;
+            padding: 0 1rem;
+            margin-bottom: 3rem;
             text-decoration: none;
-        }
-
-        /* Abstract golden geometric interlocking logo vector */
-        .logo-emblem {
-            width: 38px;
-            height: 38px;
-            fill: none;
-            stroke: var(--color-gold);
-            stroke-width: 1.8;
+            text-align: center;
+            width: 100%;
         }
 
         .logo-text {
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
-        .logo-main {
+        /* Unified Single-Bubble Stock Status Pills */
+        .stock-pill {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
             font-family: var(--font-body);
-            font-size: 1.1rem;
             font-weight: 700;
-            letter-spacing: 0.1em;
-            color: var(--color-charcoal);
-            line-height: 1.1;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 50px;
+            color: #ffffff;
+            white-space: nowrap;
+            text-align: center;
+            line-height: 1.2;
+            vertical-align: middle;
         }
 
-        .logo-sub {
-            font-family: var(--font-accent);
-            font-size: 0.5rem;
-            letter-spacing: 0.05em;
-            color: var(--color-gray-dark);
-            text-transform: uppercase;
+        .pill-crimson {
+            background-color: var(--color-crimson);
+        }
+
+        .pill-green {
+            background-color: #4caf50;
+        }
+
+        .pill-charcoal {
+            background-color: var(--color-charcoal);
         }
 
         .sidebar-nav {
@@ -161,34 +174,27 @@
 
         /* Active Navigation item styling */
         .nav-item.active {
-            background-color: var(--color-white);
-            color: var(--color-charcoal);
+            background-color: var(--color-gold-bright);
+            color: #ffffff;
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
         }
 
         .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 25%;
-            height: 50%;
-            width: 4px;
-            background-color: var(--color-gold);
-            border-radius: 0 4px 4px 0;
+            display: none;
         }
 
         .nav-item.active i {
-            color: var(--color-gold);
+            color: #ffffff;
         }
 
         .nav-item:hover:not(.active) {
-            background-color: rgba(197, 160, 89, 0.05);
-            color: var(--color-crimson);
+            background-color: var(--color-gray-light);
+            color: var(--color-charcoal);
         }
 
         .nav-item:hover i {
-            color: var(--color-crimson);
+            color: var(--color-gold-bright);
         }
 
         /* Sidebar bottom vector line art */
@@ -335,23 +341,24 @@
 
         /* Clean gold border card button */
         .add-new-btn {
-            background-color: var(--color-white);
-            border: 1.5px solid #C5A059;
-            color: var(--color-charcoal);
+            background-color: var(--color-gold-bright);
+            border: 1px solid var(--color-gold-bright);
+            color: #ffffff;
             font-family: var(--font-body);
             font-size: 0.85rem;
-            font-weight: 500;
+            font-weight: 600;
             padding: 0.8rem 1.8rem;
             border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.05);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
             transition: var(--transition-smooth);
         }
 
         .add-new-btn:hover {
-            background-color: #FAF6EE;
-            border-color: var(--color-gold-bright);
+            background-color: var(--color-crimson-deep);
+            border-color: var(--color-crimson-deep);
             transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.25);
         }
 
         /* Stats & Sparkline Widget Row */
@@ -377,19 +384,12 @@
         }
 
         .sales-overview-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--color-crimson), var(--color-gold-bright), var(--color-crimson));
-            opacity: 0.8;
+            display: none;
         }
 
         .sales-overview-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(197, 160, 89, 0.04);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
             border-color: var(--color-gold);
         }
 
@@ -421,10 +421,10 @@
             height: 100%;
         }
 
-        /* Beige Header bar */
+        /* Modern Header bar */
         .table-header-bar {
-            background-color: #FAF6EE;
-            border: 1px solid #EADCC9;
+            background-color: var(--color-gray-light);
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             padding: 0.8rem 2rem;
             display: flex;
@@ -627,8 +627,8 @@
         }
 
         .menu-item-btn:hover {
-            background-color: #FAF6EE;
-            color: var(--color-crimson);
+            background-color: var(--color-gray-light);
+            color: var(--color-gold-bright);
         }
 
         /* 4. FLOATING DEVELOPER PANEL (Payment Simulator) */
@@ -638,7 +638,7 @@
             right: 30px;
             width: 320px;
             background-color: var(--color-white);
-            border: 1.5px solid #EADCC9;
+            border: 1px solid var(--color-border);
             border-radius: 12px;
             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
             z-index: 1000;
@@ -671,7 +671,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1.2px solid #FAF6EE;
+            border-bottom: 1.2px solid var(--color-border);
             padding-bottom: 0.6rem;
         }
 
@@ -747,7 +747,7 @@
         }
 
         .sim-btn:hover {
-            background-color: #FAF6EE;
+            background-color: var(--color-gray-light);
             border-color: var(--color-gold-bright);
         }
 
@@ -755,7 +755,7 @@
             display: flex;
             flex-direction: column;
             gap: 0.4rem;
-            border-top: 1px solid #FAF6EE;
+            border-top: 1px solid var(--color-border);
             padding-top: 0.6rem;
         }
 
@@ -809,7 +809,7 @@
         }
 
         .luxury-table tr:hover {
-            background-color: #FAF9F6;
+            background-color: var(--color-gray-light);
         }
 
         .status-badge {
@@ -1055,6 +1055,102 @@
             border-bottom: none;
             padding-bottom: 0;
         }
+
+        /* TAILDASH STYLE WIDGETS */
+        .metric-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background-color: var(--color-white);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+        }
+        .metric-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .metric-card-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--color-gray-dark);
+            letter-spacing: 0.05em;
+        }
+        .metric-card-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--color-charcoal);
+            line-height: 1.2;
+            font-family: var(--font-body);
+        }
+        .metric-card-meta {
+            font-size: 0.75rem;
+            color: var(--color-gray-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: 500;
+        }
+        .metric-card-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .icon-box-blue {
+            background-color: rgba(37, 99, 235, 0.08);
+            color: #2563eb;
+        }
+        .icon-box-emerald {
+            background-color: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+        }
+        .icon-box-amber {
+            background-color: rgba(245, 158, 11, 0.08);
+            color: #f59e0b;
+        }
+        .icon-box-rose {
+            background-color: rgba(244, 63, 94, 0.08);
+            color: #f43f5e;
+        }
+        .trend-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 0.4rem;
+        }
+        .trend-up {
+            background-color: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+        }
+        .trend-down {
+            background-color: rgba(244, 63, 94, 0.08);
+            color: #f43f5e;
+        }
     </style>
 </head>
 <body>
@@ -1071,17 +1167,17 @@
         
         <!-- Sidebar Navigation (left) -->
         <aside class="sidebar">
-            <a href="/" class="sidebar-logo-container">
-                <!-- Golden abstract interlocking geometric vector logo -->
-                <svg class="logo-emblem" viewBox="0 0 100 100">
-                    <path d="M20 50 Q35 25 50 50 T80 50" fill="none" />
-                    <path d="M50 20 Q50 50 80 80" fill="none" />
-                    <path d="M50 20 Q50 50 20 80" fill="none" />
-                    <circle cx="50" cy="50" r="4" fill="var(--color-gold-bright)"></circle>
-                </svg>
-                <div class="logo-text">
-                    <span class="logo-main" style="font-family: 'Pinyon Script', cursive; font-size: 2.4rem; text-transform: none; font-weight: normal; color: var(--color-gold-bright); letter-spacing: normal;">Yadhee</span>
-                    <span class="logo-sub" style="margin-top: -5px;">SAREE & JEWELRY CO.</span>
+            <a href="/" class="sidebar-logo-container" style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.8rem; padding: 0 1.8rem; margin-bottom: 2.5rem; text-decoration: none;">
+                <div class="logo-icon-box" style="width: 38px; height: 38px; background: linear-gradient(135deg, #2563eb, #3b82f6); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/>
+                        <path d="m9 8 3 4 3-4"/>
+                        <path d="M12 12v5"/>
+                    </svg>
+                </div>
+                <div class="logo-text" style="display: flex; flex-direction: column; align-items: flex-start;">
+                    <span class="logo-main" style="font-family: 'Figtree', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--color-charcoal); letter-spacing: -0.02em; line-height: 1.1;">Yadhee</span>
+                    <span class="logo-sub" style="font-family: 'Figtree', sans-serif; font-size: 0.6rem; font-weight: 600; color: var(--color-gray-dark); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 0.1rem;">Admin Suite</span>
                 </div>
             </a>
             
@@ -1113,6 +1209,12 @@
                 <a href="#marketing" class="nav-item" onclick="switchNavTab(event, 'marketingTab')">
                     <i class="fa-solid fa-envelope-open-text"></i> Recovery Vault
                 </a>
+                <a href="#coupons" class="nav-item" onclick="switchNavTab(event, 'couponsTab')">
+                    <i class="fa-solid fa-tags"></i> Coupon Codes
+                </a>
+                <a href="#settings" class="nav-item" onclick="switchNavTab(event, 'settingsTab')">
+                    <i class="fa-solid fa-sliders"></i> Store Settings
+                </a>
             </nav>
             
             <!-- Bottom Chevron Vector Lines Art -->
@@ -1128,23 +1230,109 @@
         <div class="main-content">
             
             <!-- Top bar -->
-            <header class="topbar">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="dashboardSearch" placeholder="Search Masterpieces..." onkeyup="filterCardsGrid()">
+            <header class="topbar" style="height: 80px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; position: sticky; top: 0; background-color: var(--color-white); z-index: 90; transition: var(--transition-smooth);">
+                <div class="search-box" style="display: flex; align-items: center; gap: 0.8rem; border: none; padding: 0.6rem 0.8rem; width: 320px; background-color: transparent;">
+                    <i class="fa-solid fa-magnifying-glass" style="color: var(--color-gray-dark); font-size: 0.95rem;"></i>
+                    <input type="text" id="dashboardSearch" placeholder="Type to search..." onkeyup="filterCardsGrid()" style="border: none; background: none; font-family: var(--font-body); font-size: 0.88rem; color: var(--color-charcoal); width: 100%;">
                 </div>
-                <button type="button" id="themeToggleButton" onclick="toggleAdminTheme()" style="background: none; border: 1px solid var(--color-border); padding: 0.5rem 0.8rem; border-radius: 20px; color: var(--color-gold-bright); cursor: pointer; font-size: 0.8rem; transition: var(--transition-smooth); margin-left: auto; margin-right: 1.5rem; display: flex; align-items: center; gap: 0.4rem; font-family: var(--font-body); font-weight: 600;">
-                    <i class="fa-solid fa-moon"></i> <span>Dark Theme</span>
-                </button>
                 
-                <div class="profile-section">
-                    <div class="profile-text">
-                        <span class="profile-name">Adlin Stefy</span>
-                        <span class="profile-info">Yadhee</span>
+                <div class="header-right" style="display: flex; align-items: center; gap: 1.5rem; margin-left: auto;">
+                    <!-- Theme Toggle icon-button -->
+                    <button type="button" id="themeToggleButton" onclick="toggleAdminTheme()" style="background: none; border: none; color: var(--color-gray-dark); cursor: pointer; font-size: 1.15rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; transition: var(--transition-smooth); padding: 0;" title="Toggle Dark/Light Theme">
+                        <i class="fa-solid fa-moon"></i><span style="display:none;">Dark Theme</span>
+                    </button>
+                    
+                    <!-- Calendar Icon -->
+                    <div id="adminCalendarBtn" style="color: var(--color-gray-dark); font-size: 1.15rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; transition: var(--transition-smooth);" title="Open Appointments Calendar">
+                        <i class="fa-regular fa-calendar"></i>
                     </div>
-                    <div class="profile-avatar">
-                        <!-- Profile Avatar placeholder -->
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop" alt="Admin Curator Avatar">
+
+                    <!-- Notification Bell -->
+                    <div class="header-icon-wrapper" style="position: relative;">
+                        <button id="adminBellBtn" style="border: none; background: transparent; color: var(--color-gray-dark); font-size: 1.15rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; transition: var(--transition-smooth); padding: 0;" title="Notifications">
+                            <i class="fa-regular fa-bell"></i>
+                            <span class="badge-dot" style="position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--color-white);"></span>
+                        </button>
+                        
+                        <!-- Notifications Dropdown -->
+                        <div id="bellDropdown" class="header-dropdown" style="display: none; position: absolute; top: 45px; right: 0; width: 280px; background: var(--color-white); border: 1px solid var(--color-border); border-radius: 12px; box-shadow: 0 10px 25px rgba(30, 2, 6, 0.08); z-index: 1000; padding: 0.8rem 0; text-align: left;">
+                            <h4 style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.82rem; letter-spacing: 0.05em; color: var(--color-crimson); text-transform: uppercase; font-weight: 600;">Notifications</h4>
+                            <div style="max-height: 240px; overflow-y: auto;">
+                                <div class="dropdown-item" style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.78rem; transition: background 0.2s;">
+                                    <strong style="display:block; color:var(--color-charcoal); font-weight: 600;">🔔 New Order Alert</strong>
+                                    <span style="color:var(--color-gray-dark);">Order #YDH-ORD-00104 was placed.</span>
+                                    <small style="display:block; color:var(--color-gold); margin-top:0.2rem;">2 mins ago</small>
+                                </div>
+                                <div class="dropdown-item" style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.78rem; transition: background 0.2s;">
+                                    <strong style="display:block; color:var(--color-charcoal); font-weight: 600;">⚠️ Low Stock Warning</strong>
+                                    <span style="color:var(--color-gray-dark);">Chanderi Silk Saree is below 3 units.</span>
+                                    <small style="display:block; color:var(--color-gold); margin-top:0.2rem;">1 hour ago</small>
+                                </div>
+                                <div class="dropdown-item" style="padding: 0.8rem 1rem; font-size: 0.78rem; transition: background 0.2s;">
+                                    <strong style="display:block; color:var(--color-charcoal); font-weight: 600;">📅 Atelier Booking</strong>
+                                    <span style="color:var(--color-gray-dark);">New consultation booked for tomorrow.</span>
+                                    <small style="display:block; color:var(--color-gold); margin-top:0.2rem;">3 hours ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mail Envelope -->
+                    <div class="header-icon-wrapper" style="position: relative;">
+                        <button id="adminMailBtn" style="border: none; background: transparent; color: var(--color-gray-dark); font-size: 1.15rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; transition: var(--transition-smooth); padding: 0;" title="Messages & Cart Recoveries">
+                            <i class="fa-regular fa-envelope"></i>
+                            <span class="badge-dot" style="position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--color-white);"></span>
+                        </button>
+                        
+                        <!-- Mail Dropdown -->
+                        <div id="mailDropdown" class="header-dropdown" style="display: none; position: absolute; top: 45px; right: 0; width: 290px; background: var(--color-white); border: 1px solid var(--color-border); border-radius: 12px; box-shadow: 0 10px 25px rgba(30, 2, 6, 0.08); z-index: 1000; padding: 0.8rem 0; text-align: left;">
+                            <h4 style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.82rem; letter-spacing: 0.05em; color: var(--color-crimson); text-transform: uppercase; font-weight: 600;">Recoveries & Inquiries</h4>
+                            <div style="max-height: 240px; overflow-y: auto;">
+                                <div class="dropdown-item" style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.78rem; transition: background 0.2s;">
+                                    <strong style="display:block; color:var(--color-charcoal); font-weight: 600;">🛒 Abandoned Cart</strong>
+                                    <span style="color:var(--color-gray-dark);">Sijo has items remaining in cart (₹45,000).</span>
+                                    <small style="display:block; color:var(--color-gold); margin-top:0.2rem;">30 mins ago</small>
+                                </div>
+                                <div class="dropdown-item" style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.78rem; transition: background 0.2s;">
+                                    <strong style="display:block; color:var(--color-charcoal); font-weight: 600;">✉️ Contact Inquiry</strong>
+                                    <span style="color:var(--color-gray-dark);">Praveen: "Custom bridal sizing inquiry"</span>
+                                    <small style="display:block; color:var(--color-gold); margin-top:0.2rem;">2 hours ago</small>
+                                </div>
+                                <div class="dropdown-item" style="padding: 0.8rem 1rem; font-size: 0.78rem; transition: background 0.2s;">
+                                    <strong style="display:block; color:var(--color-charcoal); font-weight: 600;">🛒 Abandoned Cart</strong>
+                                    <span style="color:var(--color-gray-dark);">Rohan: Kanchipuram Brocade left in checkout.</span>
+                                    <small style="display:block; color:var(--color-gold); margin-top:0.2rem;">4 hours ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile dropdown -->
+                    <div class="profile-dropdown-wrapper" style="position: relative;">
+                        <div id="adminProfileBtn" class="profile-section" style="display: flex; align-items: center; gap: 0.8rem; cursor: pointer; padding-left: 0.5rem; border-left: 1px solid var(--color-border);">
+                            <div class="profile-text" style="display: flex; flex-direction: column; text-align: right; line-height: 1.2;">
+                                <span class="profile-name" style="font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; color: var(--color-charcoal);">Adlin Stefy</span>
+                                <span class="profile-info" style="font-family: var(--font-body); font-size: 0.72rem; color: var(--color-gray-dark); font-weight: 500;">Yadhee Curator</span>
+                            </div>
+                            <div class="profile-avatar" style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 1px solid var(--color-border);">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop" alt="Admin Curator Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: var(--color-gray-dark); margin-left: 0.1rem;"></i>
+                        </div>
+
+                        <!-- Profile Options Dropdown -->
+                        <div id="profileDropdown" class="header-dropdown" style="display: none; position: absolute; top: 50px; right: 0; width: 180px; background: var(--color-white); border: 1px solid var(--color-border); border-radius: 12px; box-shadow: 0 10px 25px rgba(30, 2, 6, 0.08); z-index: 1000; padding: 0.5rem 0; text-align: left;">
+                            <a href="/admin" class="dropdown-link" style="display: block; padding: 0.6rem 1.2rem; font-size: 0.82rem; color: var(--color-charcoal); text-decoration: none; transition: background 0.2s;">
+                                <i class="fa-solid fa-circle-user" style="margin-right: 0.5rem; color: var(--color-gold); width: 16px;"></i> Admin Profile
+                            </a>
+                            <a href="/" class="dropdown-link" style="display: block; padding: 0.6rem 1.2rem; font-size: 0.82rem; color: var(--color-charcoal); text-decoration: none; transition: background 0.2s;" target="_blank">
+                                <i class="fa-solid fa-store" style="margin-right: 0.5rem; color: var(--color-gold); width: 16px;"></i> Visit Storefront
+                            </a>
+                            <div style="height: 1px; background: var(--color-border); margin: 0.4rem 0;"></div>
+                            <a href="/admin/logout" class="dropdown-link" style="display: block; padding: 0.6rem 1.2rem; font-size: 0.82rem; color: var(--color-crimson); text-decoration: none; transition: background 0.2s; font-weight: 500;">
+                                <i class="fa-solid fa-right-from-bracket" style="margin-right: 0.5rem; width: 16px;"></i> Log Out
+                            </a>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -1160,9 +1348,14 @@
                     <div class="page-header-row">
                         <h1 class="page-title">Product Management</h1>
                         
-                        <button class="add-new-btn" onclick="openAddProductModal()">
-                            Add New Arrival
-                        </button>
+                        <div style="display: flex; gap: 0.8rem; align-items: center;">
+                            <a href="/admin/export/inventory" class="admin-theme-btn" style="background-color: var(--color-crimson); border: none; color: #fff; padding: 0.6rem 1.2rem; border-radius: 4px; font-family: var(--font-accent); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; height: 38px;">
+                                <i class="fa-solid fa-file-csv"></i> Export CSV
+                            </a>
+                            <button class="add-new-btn" onclick="openAddProductModal()" style="height: 38px;">
+                                Add New Arrival
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Curated stats widgets -->
@@ -1307,11 +1500,11 @@
                                     </td>
                                     <td style="padding:1rem; text-align:center; vertical-align:middle;">
                                         <% if (p.stock_quantity === 0) { %>
-                                            <span style="background-color: var(--color-charcoal); color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing:0.02em;">Out of Stock</span>
+                                            <span class="stock-pill pill-charcoal">Out Of Stock</span>
                                         <% } else if (p.stock_quantity < lowStockThreshold) { %>
-                                            <span style="background-color: var(--color-crimson); color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing:0.02em;">Low Stock</span>
+                                            <span class="stock-pill pill-crimson">Low Stock</span>
                                         <% } else { %>
-                                            <span style="background-color: #67C23A; color: white; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing:0.02em;">In Stock</span>
+                                            <span class="stock-pill pill-green">In Stock</span>
                                         <% } %>
                                     </td>
                                     <td style="padding:1rem; text-align:center; vertical-align:middle;">
@@ -1332,88 +1525,202 @@
                         <h1 class="page-title">Executive BI Reports &amp; Analytics</h1>
                     </div>
                     
-                    <!-- KPI Cards Grid -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.5rem; margin-bottom: 2rem;">
+                    <!-- KPI Cards Grid (Taildash Style) -->
+                    <div class="metric-card-grid">
                         <!-- Revenue Card -->
-                        <div class="sales-overview-card" style="display:flex; flex-direction:column; gap:0.4rem; justify-content:center; padding: 1.5rem; min-height:120px; border-left: 4px solid var(--color-gold-bright);">
-                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-gray-dark); font-weight:600;">Total Sovereign Revenue</span>
-                            <span style="font-size: 1.8rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--color-crimson);">₹<%= (stats.total_inr || 0).toLocaleString('en-IN') %></span>
-                            <span style="font-size: 0.75rem; color: var(--color-gold-bright); font-weight:500;">$<%= (stats.total_usd || 0).toLocaleString() %> USD</span>
+                        <div class="metric-card">
+                            <div class="metric-card-content">
+                                <span class="metric-card-title">Total Sovereign Revenue</span>
+                                <span class="metric-card-value">₹<%= (stats.total_inr || 0).toLocaleString('en-IN') %></span>
+                                <div class="metric-card-meta">
+                                    <span>$<%= (stats.total_usd || 0).toLocaleString() %> USD</span>
+                                    <span class="trend-badge trend-up">0.43% <i class="fa-solid fa-arrow-up"></i></span>
+                                </div>
+                            </div>
+                            <div class="metric-card-icon-box icon-box-blue">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
                         </div>
+
                         <!-- Valuation Card -->
-                        <div class="sales-overview-card" style="display:flex; flex-direction:column; gap:0.4rem; justify-content:center; padding: 1.5rem; min-height:120px; border-left: 4px solid var(--color-crimson);">
-                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-gray-dark); font-weight:600;">Inventory Asset Valuation</span>
-                            <span style="font-size: 1.8rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--color-charcoal);">₹<%= (stats.inventory_asset_value || 0).toLocaleString('en-IN') %></span>
-                            <span style="font-size: 0.72rem; color: var(--color-gray-dark); font-style:italic;">Calculated across active masterpieces</span>
+                        <div class="metric-card">
+                            <div class="metric-card-content">
+                                <span class="metric-card-title">Inventory Asset Valuation</span>
+                                <span class="metric-card-value">₹<%= (stats.inventory_asset_value || 0).toLocaleString('en-IN') %></span>
+                                <div class="metric-card-meta">
+                                    <span>Active Masterpieces</span>
+                                    <span class="trend-badge trend-up">4.35% <i class="fa-solid fa-arrow-up"></i></span>
+                                </div>
+                            </div>
+                            <div class="metric-card-icon-box icon-box-emerald">
+                                <i class="fa-solid fa-warehouse"></i>
+                            </div>
                         </div>
+
                         <!-- Active PO Card -->
-                        <div class="sales-overview-card" style="display:flex; flex-direction:column; gap:0.4rem; justify-content:center; padding: 1.5rem; min-height:120px; border-left: 4px solid var(--color-gold-medium);">
-                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-gray-dark); font-weight:600;">Active Procurement value</span>
-                            <span style="font-size: 1.8rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--color-gold-bright);">₹<%= (stats.active_po_value || 0).toLocaleString('en-IN') %></span>
-                            <span style="font-size: 0.72rem; color: var(--color-gray-dark); font-style:italic;">Pending artisan silk &amp; gold orders</span>
+                        <div class="metric-card">
+                            <div class="metric-card-content">
+                                <span class="metric-card-title">Active Procurement Value</span>
+                                <span class="metric-card-value">₹<%= (stats.active_po_value || 0).toLocaleString('en-IN') %></span>
+                                <div class="metric-card-meta">
+                                    <span>Pending Artisan Orders</span>
+                                    <span class="trend-badge trend-up">2.59% <i class="fa-solid fa-arrow-up"></i></span>
+                                </div>
+                            </div>
+                            <div class="metric-card-icon-box icon-box-amber">
+                                <i class="fa-solid fa-truck-ramp-box"></i>
+                            </div>
                         </div>
+
                         <!-- Low Stock Card -->
-                        <div class="sales-overview-card" style="display:flex; flex-direction:column; gap:0.4rem; justify-content:center; padding: 1.5rem; min-height:120px; border-left: 4px solid #E6A23C;">
-                            <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-gray-dark); font-weight:600;">Low Stock Alerts</span>
-                            <span style="font-size: 1.8rem; font-family: 'Cormorant Garamond', serif; font-weight: 600; color: #E6A23C;"><%= stats.low_stock %> Items</span>
-                            <span style="font-size: 0.72rem; color: var(--color-gray-dark); font-style:italic;">Below threshold (<%= lowStockThreshold %> units)</span>
+                        <div class="metric-card">
+                            <div class="metric-card-content">
+                                <span class="metric-card-title">Low Stock Alerts</span>
+                                <span class="metric-card-value"><%= stats.low_stock %> Items</span>
+                                <div class="metric-card-meta">
+                                    <span>Below Threshold</span>
+                                    <span class="trend-badge trend-down">0.95% <i class="fa-solid fa-arrow-down"></i></span>
+                                </div>
+                            </div>
+                            <div class="metric-card-icon-box icon-box-rose">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Analytics Grid -->
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:2rem;">
                         <div class="sales-overview-card" style="padding:1.5rem;">
-                            <span class="overview-title" style="margin-bottom:1rem; display:block; color:var(--color-crimson);">Monthly Revenue Trend (Luxury Projections)</span>
-                            <div style="width:100%; height:230px; background: #FCFAF7; border: 1px solid var(--color-gold-medium); border-radius: 4px; padding: 1rem; position:relative; overflow:hidden;">
-                                <svg style="width:100%; height:100%;" viewBox="0 0 400 200" preserveAspectRatio="none">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                                <span class="overview-title" style="font-size: 0.95rem; font-weight:700; color:var(--color-charcoal);">Sales Analytics</span>
+                                <div style="display:flex; align-items:center; gap:1rem; font-size:0.75rem;">
+                                    <span style="display:flex; align-items:center; gap:0.3rem; color:var(--color-gray-dark); font-weight:500;">
+                                        <span style="display:inline-block; width:8px; height:8px; background-color:#2563eb; border-radius:50%;"></span> Online Orders
+                                    </span>
+                                    <span style="display:flex; align-items:center; gap:0.3rem; color:var(--color-gray-dark); font-weight:500;">
+                                        <span style="display:inline-block; width:8px; height:8px; background-color:#10b981; border-radius:50%;"></span> Artisan Orders
+                                    </span>
+                                    <select style="background:var(--color-gray-light); border:1px solid var(--color-border); border-radius:6px; padding:0.2rem 0.5rem; font-family:inherit; font-size:0.75rem; color:var(--color-charcoal); font-weight:500;">
+                                        <option>Monthly</option>
+                                        <option>Weekly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="width:100%; height:230px; background: transparent; border: none; padding: 0.5rem; position:relative; overflow:hidden;">
+                                <svg style="width:100%; height:100%; overflow:visible;" viewBox="0 0 400 200" preserveAspectRatio="none">
                                     <defs>
-                                        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stop-color="var(--color-crimson)" stop-opacity="0.25"/>
-                                            <stop offset="100%" stop-color="var(--color-crimson)" stop-opacity="0"/>
+                                        <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#2563eb" stop-opacity="0.15"/>
+                                            <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+                                        </linearGradient>
+                                        <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#10b981" stop-opacity="0.12"/>
+                                            <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
                                         </linearGradient>
                                     </defs>
-                                    <line x1="0" y1="40" x2="400" y2="40" stroke="#F1ECE1" stroke-width="1"></line>
-                                    <line x1="0" y1="80" x2="400" y2="80" stroke="#F1ECE1" stroke-width="1"></line>
-                                    <line x1="0" y1="120" x2="400" y2="120" stroke="#F1ECE1" stroke-width="1"></line>
-                                    <line x1="0" y1="160" x2="400" y2="160" stroke="#F1ECE1" stroke-width="1"></line>
-                                    <path d="M 0 170 Q 80 120 160 145 T 320 60 L 400 95 L 400 200 L 0 200 Z" fill="url(#areaGradient)"></path>
-                                    <path d="M 0 170 Q 80 120 160 145 T 320 60 L 400 95" fill="none" stroke="var(--color-crimson)" stroke-width="3"></path>
-                                    <g class="chart-point"><title>Jan: ₹1,80,000</title><circle cx="80" cy="130" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
-                                    <g class="chart-point"><title>Feb: ₹1,55,000</title><circle cx="160" cy="145" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
-                                    <g class="chart-point"><title>Mar: ₹2,20,000</title><circle cx="240" cy="90" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
-                                    <g class="chart-point"><title>Apr: ₹2,80,000</title><circle cx="320" cy="60" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
-                                    <g class="chart-point"><title>May: ₹2,10,000</title><circle cx="400" cy="95" r="4.5" fill="var(--color-gold-bright)" class="interactive-dot"></circle></g>
+                                    <!-- horizontal grid lines -->
+                                    <line x1="0" y1="40" x2="400" y2="40" stroke="var(--color-gray-light)" stroke-width="1"></line>
+                                    <line x1="0" y1="80" x2="400" y2="80" stroke="var(--color-gray-light)" stroke-width="1"></line>
+                                    <line x1="0" y1="120" x2="400" y2="120" stroke="var(--color-gray-light)" stroke-width="1"></line>
+                                    <line x1="0" y1="160" x2="400" y2="160" stroke="var(--color-gray-light)" stroke-width="1"></line>
+                                    
+                                    <!-- Blue Line (Online Orders) -->
+                                    <path d="M 0 160 Q 80 120 160 140 T 320 80 L 400 100 L 400 200 L 0 200 Z" fill="url(#blueGradient)"></path>
+                                    <path d="M 0 160 Q 80 120 160 140 T 320 80 L 400 100" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"></path>
+                                    
+                                    <!-- Green Line (Artisan Orders) -->
+                                    <path d="M 0 140 Q 80 90 160 110 T 320 60 L 400 80 L 400 200 L 0 200 Z" fill="url(#greenGradient)"></path>
+                                    <path d="M 0 140 Q 80 90 160 110 T 320 60 L 400 80" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"></path>
+                                    
+                                    <!-- Interactive Dots -->
+                                    <circle cx="80" cy="115" r="4" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"></circle>
+                                    <circle cx="160" cy="140" r="4" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"></circle>
+                                    <circle cx="240" cy="95" r="4" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"></circle>
+                                    <circle cx="320" cy="80" r="4" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"></circle>
+                                    
+                                    <circle cx="80" cy="95" r="4" fill="#10b981" stroke="#ffffff" stroke-width="1.5"></circle>
+                                    <circle cx="160" cy="110" r="4" fill="#10b981" stroke="#ffffff" stroke-width="1.5"></circle>
+                                    <circle cx="240" cy="75" r="4" fill="#10b981" stroke="#ffffff" stroke-width="1.5"></circle>
+                                    <circle cx="320" cy="60" r="4" fill="#10b981" stroke="#ffffff" stroke-width="1.5"></circle>
                                 </svg>
-                                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--color-gray-dark); margin-top:0.3rem;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--color-gray-dark); margin-top:0.5rem; font-weight:500; padding:0 0.2rem;">
+                                    <span>Sep</span>
+                                    <span>Oct</span>
+                                    <span>Nov</span>
+                                    <span>Dec</span>
                                     <span>Jan</span>
                                     <span>Feb</span>
                                     <span>Mar</span>
                                     <span>Apr</span>
                                     <span>May</span>
-                                    <span>Jun (Current)</span>
+                                    <span>Jun</span>
+                                    <span>Jul</span>
+                                    <span>Aug</span>
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="sales-overview-card" style="padding:1.5rem;">
-                            <span class="overview-title" style="margin-bottom:1rem; display:block; color:var(--color-crimson);">Masterpiece Distribution (Category Inventory)</span>
-                            <div style="width:100%; height:230px; background: #FCFAF7; border: 1px solid var(--color-gold-medium); border-radius: 4px; padding: 1.5rem; display:flex; align-items:center; gap:2rem; justify-content:center;">
-                                <svg style="width:120px; height:120px; flex-shrink:0;" viewBox="0 0 36 36">
-                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#F1ECE1" stroke-width="3.5"></circle>
-                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-crimson)" stroke-width="3.5" stroke-dasharray="60 40" stroke-dashoffset="25"></circle>
-                                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-gold-bright)" stroke-width="3.5" stroke-dasharray="40 60" stroke-dashoffset="85"></circle>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                                <span class="overview-title" style="font-size: 0.95rem; font-weight:700; color:var(--color-charcoal);">Sales Graph</span>
+                                <div style="display:flex; align-items:center; gap:1rem; font-size:0.75rem;">
+                                    <span style="display:flex; align-items:center; gap:0.3rem; color:var(--color-gray-dark); font-weight:500;">
+                                        <span style="display:inline-block; width:8px; height:8px; background-color:#2563eb; border-radius:50%;"></span> Sales
+                                    </span>
+                                    <span style="display:flex; align-items:center; gap:0.3rem; color:var(--color-gray-dark); font-weight:500;">
+                                        <span style="display:inline-block; width:8px; height:8px; background-color:#10b981; border-radius:50%;"></span> Revenue
+                                    </span>
+                                    <select style="background:var(--color-gray-light); border:1px solid var(--color-border); border-radius:6px; padding:0.2rem 0.5rem; font-family:inherit; font-size:0.75rem; color:var(--color-charcoal); font-weight:500;">
+                                        <option>This Week</option>
+                                        <option>Last Week</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="width:100%; height:230px; background: transparent; border: none; padding: 0.5rem; position:relative; overflow:hidden;">
+                                <svg style="width:100%; height:100%; overflow:visible;" viewBox="0 0 400 200" preserveAspectRatio="none">
+                                    <!-- horizontal grid lines -->
+                                    <line x1="0" y1="40" x2="400" y2="40" stroke="var(--color-gray-light)" stroke-width="1"></line>
+                                    <line x1="0" y1="80" x2="400" y2="80" stroke="var(--color-gray-light)" stroke-width="1"></line>
+                                    <line x1="0" y1="120" x2="400" y2="120" stroke="var(--color-gray-light)" stroke-width="1"></line>
+                                    <line x1="0" y1="160" x2="400" y2="160" stroke="var(--color-gray-light)" stroke-width="1"></line>
+                                    
+                                    <!-- Stacked Bars (M, T, W, T, F, S, S) -->
+                                    <!-- Monday -->
+                                    <rect x="30" y="80" width="14" height="80" rx="3" fill="#2563eb"></rect>
+                                    <rect x="30" y="45" width="14" height="32" rx="3" fill="#10b981"></rect>
+                                    
+                                    <!-- Tuesday -->
+                                    <rect x="85" y="60" width="14" height="100" rx="3" fill="#2563eb"></rect>
+                                    <rect x="85" y="25" width="14" height="32" rx="3" fill="#10b981"></rect>
+                                    
+                                    <!-- Wednesday -->
+                                    <rect x="140" y="90" width="14" height="70" rx="3" fill="#2563eb"></rect>
+                                    <rect x="140" y="65" width="14" height="22" rx="3" fill="#10b981"></rect>
+                                    
+                                    <!-- Thursday -->
+                                    <rect x="195" y="70" width="14" height="90" rx="3" fill="#2563eb"></rect>
+                                    <rect x="195" y="35" width="14" height="32" rx="3" fill="#10b981"></rect>
+                                    
+                                    <!-- Friday -->
+                                    <rect x="250" y="110" width="14" height="50" rx="3" fill="#2563eb"></rect>
+                                    <rect x="250" y="95" width="14" height="12" rx="3" fill="#10b981"></rect>
+                                    
+                                    <!-- Saturday -->
+                                    <rect x="305" y="50" width="14" height="110" rx="3" fill="#2563eb"></rect>
+                                    <rect x="305" y="20" width="14" height="28" rx="3" fill="#10b981"></rect>
+                                    
+                                    <!-- Sunday -->
+                                    <rect x="360" y="40" width="14" height="120" rx="3" fill="#2563eb"></rect>
+                                    <rect x="360" y="15" width="14" height="22" rx="3" fill="#10b981"></rect>
                                 </svg>
-                                <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.78rem;">
-                                    <div style="display:flex; align-items:center; gap:0.5rem;">
-                                        <span style="display:inline-block; width:12px; height:12px; background-color:var(--color-crimson); border-radius:2px;"></span>
-                                        <span style="font-weight:600; color:var(--color-charcoal);">Bespoke Sarees (60%)</span>
-                                    </div>
-                                    <div style="display:flex; align-items:center; gap:0.5rem;">
-                                        <span style="display:inline-block; width:12px; height:12px; background-color:var(--color-gold-bright); border-radius:2px;"></span>
-                                        <span style="font-weight:600; color:var(--color-charcoal);">Sovereign Jewels (40%)</span>
-                                    </div>
-                                    <div style="font-size:0.7rem; color:var(--color-gray-dark); margin-top:0.4rem; font-style:italic;">
-                                        Based on direct ledger asset weights.
-                                    </div>
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--color-gray-dark); margin-top:0.5rem; font-weight:500; padding:0 1.2rem;">
+                                    <span>M</span>
+                                    <span>T</span>
+                                    <span>W</span>
+                                    <span>T</span>
+                                    <span>F</span>
+                                    <span>S</span>
+                                    <span>S</span>
                                 </div>
                             </div>
                         </div>
@@ -1542,8 +1849,11 @@
                 <!-- TAB PANEL: SECURE DISPATCHES (ORDERS) -->
                 <!-- ============================================================= -->
                 <section id="ordersTab" class="tab-panel">
-                    <div class="page-header-row">
+                    <div class="page-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                         <h1 class="page-title">Valued Dispatches Registry</h1>
+                        <a href="/admin/export/orders" class="admin-theme-btn" style="background-color: var(--color-crimson); border: none; color: #fff; padding: 0.6rem 1.2rem; border-radius: 4px; font-family: var(--font-accent); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </a>
                     </div>
 
                     <div class="luxury-table-wrapper">
@@ -1568,7 +1878,14 @@
                                     </td>
                                     <td><span style="font-size: 0.8rem;"><%= o.shipping_address %></span></td>
                                     <td><strong>₹<%= o.total_price_inr.toLocaleString('en-IN') %></strong></td>
-                                    <td><span class="status-badge <%= o.status %>"><%= o.status %></span></td>
+                                    <td>
+                                        <span class="status-badge <%= o.status %>"><%= o.status %></span>
+                                        <% if (o.status === 'Shipped' && o.tracking_id) { %>
+                                            <div style="font-size: 0.72rem; margin-top: 0.3rem; color: var(--color-gray-dark); font-weight: 500;">
+                                                <%= o.carrier %>: <%= o.tracking_id %>
+                                            </div>
+                                        <% } %>
+                                    </td>
                                     <td>
                                         <div class="btn-action-group">
                                             <button class="action-btn-sm" onclick="viewOrderDetails(<%= o.id %>)">View Items <i class="fa-solid fa-box-open"></i></button>
@@ -1640,8 +1957,11 @@
                 <!-- TAB PANEL: PATRONS NEWSLETTER CHRONICLES -->
                 <!-- ============================================================= -->
                 <section id="subsTab" class="tab-panel">
-                    <div class="page-header-row">
+                    <div class="page-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                         <h1 class="page-title">Patron Chronicles Inner Circle</h1>
+                        <a href="/admin/export/subscribers" class="admin-theme-btn" style="background-color: var(--color-crimson); border: none; color: #fff; padding: 0.6rem 1.2rem; border-radius: 4px; font-family: var(--font-accent); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </a>
                     </div>
 
                     <div class="luxury-table-wrapper" style="max-width: 600px; margin: 0 auto;">
@@ -1734,6 +2054,120 @@
                                 <% }); %>
                             </tbody>
                         </table>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB PANEL: PROMO COUPONS -->
+                <!-- ============================================================= -->
+                <section id="couponsTab" class="tab-panel">
+                    <div class="page-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h1 class="page-title">Promo Coupon Codes</h1>
+                        <button onclick="toggleCouponModal(true)" class="admin-theme-btn" style="background-color: var(--color-gold); border: none; color: #fff; padding: 0.6rem 1.2rem; border-radius: 4px; font-family: var(--font-accent); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-plus"></i> Create Coupon
+                        </button>
+                    </div>
+
+                    <div class="luxury-table-wrapper">
+                        <table class="luxury-table">
+                            <thead>
+                                <tr>
+                                    <th>Coupon Code</th>
+                                    <th>Discount Type</th>
+                                    <th>Discount Value</th>
+                                    <th>Expiry Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% coupons.forEach(function(c) { %>
+                                <tr>
+                                    <td><strong style="color: var(--color-crimson); font-family: var(--font-accent); font-size: 0.82rem; letter-spacing: 0.05em;"><%= c.code %></strong></td>
+                                    <td><span style="text-transform: capitalize; font-weight: 500;"><%= c.discount_type %></span></td>
+                                    <td>
+                                        <strong>
+                                            <%= c.discount_type === 'percent' ? c.value + '%' : '₹' + c.value.toLocaleString('en-IN') %>
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <span style="font-size: 0.76rem;"><%= c.expires_at ? c.expires_at : 'Never Expires' %></span>
+                                    </td>
+                                    <td>
+                                        <% if (c.is_active === 1) { %>
+                                            <span class="status-badge Delivered" style="white-space: nowrap;">Active</span>
+                                        <% } else { %>
+                                            <span class="status-badge Pending" style="white-space: nowrap;">Inactive</span>
+                                        <% } %>
+                                    </td>
+                                    <td style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <form action="/admin/coupons/toggle/<%= c.id %>" method="POST" style="margin:0;">
+                                            <input type="hidden" name="is_active" value="<%= c.is_active %>">
+                                            <button type="submit" class="action-btn-sm" style="border-color: var(--color-gold); color: var(--color-gold); font-weight: 500;">
+                                                <%= c.is_active === 1 ? 'Disable' : 'Enable' %>
+                                            </button>
+                                        </form>
+                                        <form action="/admin/coupons/delete/<%= c.id %>" method="POST" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete this coupon?');">
+                                            <button type="submit" class="action-btn-sm" style="border-color: var(--color-crimson); color: var(--color-crimson); font-weight: 500;">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                <% if (coupons.length === 0) { %>
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--color-gray-dark); font-style: italic; padding: 2rem;">No coupons registered yet.</td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- ============================================================= -->
+                <!-- TAB PANEL: STORE SETTINGS -->
+                <!-- ============================================================= -->
+                <section id="settingsTab" class="tab-panel">
+                    <div class="page-header-row" style="margin-bottom: 2rem;">
+                        <h1 class="page-title">Global Store Configuration</h1>
+                    </div>
+
+                    <div style="background-color: var(--color-white); border: 1px solid var(--color-border); border-radius: 8px; padding: 2.5rem; max-width: 650px; margin: 0 auto; box-shadow: var(--shadow-subtle);">
+                        <form action="/admin/settings/save" method="POST">
+                            <h2 style="font-family: var(--font-accent); font-size: 1rem; color: var(--color-crimson); margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Communications & Alerts</h2>
+                            
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; font-size: 0.76rem; font-family: var(--font-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-charcoal); margin-bottom: 0.4rem;">Admin WhatsApp Number</label>
+                                <input type="text" name="admin_whatsapp_number" value="<%= settings.admin_whatsapp_number %>" required style="width: 100%; height: 44px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 1rem; font-family: var(--font-body); font-size: 0.88rem; color: var(--color-charcoal);">
+                                <span style="font-size: 0.7rem; color: var(--color-gray-dark); margin-top: 0.2rem; display: block;">Automated checkout alert notifications will be routed here.</span>
+                            </div>
+
+                            <div style="margin-bottom: 2rem;">
+                                <label style="display: block; font-size: 0.76rem; font-family: var(--font-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-charcoal); margin-bottom: 0.4rem;">Store Contact Email Address</label>
+                                <input type="email" name="store_email" value="<%= settings.store_email %>" required style="width: 100%; height: 44px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 1rem; font-family: var(--font-body); font-size: 0.88rem; color: var(--color-charcoal);">
+                                <span style="font-size: 0.7rem; color: var(--color-gray-dark); margin-top: 0.2rem; display: block;">Official customer email invoices will use this sender handle.</span>
+                            </div>
+
+                            <h2 style="font-family: var(--font-accent); font-size: 1rem; color: var(--color-crimson); margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2.5rem;">Billing & Taxation</h2>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+                                <div>
+                                    <label style="display: block; font-size: 0.76rem; font-family: var(--font-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-charcoal); margin-bottom: 0.4rem;">Base Shipping Charge (INR)</label>
+                                    <input type="number" name="shipping_fee_inr" value="<%= settings.shipping_fee_inr %>" required style="width: 100%; height: 44px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 1rem; font-family: var(--font-body); font-size: 0.88rem; color: var(--color-charcoal);">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 0.76rem; font-family: var(--font-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-charcoal); margin-bottom: 0.4rem;">Tax Rate (GST %)</label>
+                                    <input type="number" name="tax_rate_percent" value="<%= settings.tax_rate_percent %>" required style="width: 100%; height: 44px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 1rem; font-family: var(--font-body); font-size: 0.88rem; color: var(--color-charcoal);">
+                                </div>
+                            </div>
+
+                            <div style="text-align: center;">
+                                <button type="submit" class="admin-theme-btn" style="background-color: var(--color-gold); border: none; color: #fff; padding: 0.8rem 2rem; border-radius: 4px; font-family: var(--font-accent); font-size: 0.76rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-weight: 600;">
+                                    Save Configurations
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </section>
 
@@ -1985,7 +2419,19 @@
                         <option value="Delivered">Delivered & fitting closed</option>
                     </select>
                 </div>
-                <button type="submit" class="add-new-btn" style="width: 100%;">Commit Status Change <i class="fa-solid fa-clipboard-check"></i></button>
+                
+                <div class="form-group" id="trackingFieldsContainer" style="display: none; margin-top: 1rem;">
+                    <div style="margin-bottom: 0.8rem;">
+                        <label for="carrierInput" style="display: block; font-size: 0.76rem; font-weight: 600; margin-bottom: 0.2rem; color: var(--color-charcoal);">Courier Carrier</label>
+                        <input type="text" name="carrier" id="carrierInput" placeholder="BlueDart, DHL, FedEx..." style="width:100%; height: 38px; border: 1px solid var(--color-gold-medium); border-radius: 4px; padding: 0 0.8rem; font-size: 0.85rem;">
+                    </div>
+                    <div>
+                        <label for="trackingIdInput" style="display: block; font-size: 0.76rem; font-weight: 600; margin-bottom: 0.2rem; color: var(--color-charcoal);">Tracking Number / URL</label>
+                        <input type="text" name="tracking_id" id="trackingIdInput" placeholder="e.g. 123456789" style="width:100%; height: 38px; border: 1px solid var(--color-gold-medium); border-radius: 4px; padding: 0 0.8rem; font-size: 0.85rem;">
+                    </div>
+                </div>
+
+                <button type="submit" class="add-new-btn" style="width: 100%; margin-top: 1rem;">Commit Status Change <i class="fa-solid fa-clipboard-check"></i></button>
             </form>
         </div>
     </div>
@@ -2043,6 +2489,45 @@
                 </div>
                 <button type="submit" class="add-new-btn" style="width:100%; padding:0.7rem; font-size:0.88rem; font-weight:600; margin-top:0.5rem;">
                     Raise Purchase Order <i class="fa-solid fa-file-invoice"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- CREATE COUPON MODAL -->
+    <!-- ============================================================= -->
+    <div id="createCouponModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(36,24,26,0.6); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background-color: var(--color-white); border: 1px solid var(--color-border); border-radius: 8px; width: 450px; padding: 2rem; box-shadow: var(--shadow-accent); position: relative;">
+            <button onclick="toggleCouponModal(false)" style="position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; font-size: 1.2rem; color: var(--color-gray-dark); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="font-family: var(--font-accent); font-size: 1.1rem; color: var(--color-crimson); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight:600;">Create Promo Coupon</h3>
+            
+            <form action="/admin/coupons/add" method="POST">
+                <div style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-size: 0.7rem; font-family: var(--font-accent); font-weight: 600; text-transform: uppercase; color: var(--color-charcoal); margin-bottom: 0.4rem;">Coupon Code</label>
+                    <input type="text" name="code" placeholder="WELCOME50" required style="width: 100%; height: 40px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 0.8rem; font-family: var(--font-accent); font-size: 0.88rem; text-transform: uppercase;">
+                </div>
+                
+                <div style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-size: 0.7rem; font-family: var(--font-accent); font-weight: 600; text-transform: uppercase; color: var(--color-charcoal); margin-bottom: 0.4rem;">Discount Type</label>
+                    <select name="discount_type" required style="width: 100%; height: 40px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 0.8rem; font-family: var(--font-body); font-size: 0.88rem; background: var(--color-white);">
+                        <option value="percent">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount (₹)</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-size: 0.7rem; font-family: var(--font-accent); font-weight: 600; text-transform: uppercase; color: var(--color-charcoal); margin-bottom: 0.4rem;">Discount Value</label>
+                    <input type="number" name="value" placeholder="10" required style="width: 100%; height: 40px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 0.8rem; font-family: var(--font-body); font-size: 0.88rem;">
+                </div>
+                
+                <div style="margin-bottom: 1.8rem;">
+                    <label style="display: block; font-size: 0.7rem; font-family: var(--font-accent); font-weight: 600; text-transform: uppercase; color: var(--color-charcoal); margin-bottom: 0.4rem;">Expiration Date (Optional)</label>
+                    <input type="date" name="expires_at" style="width: 100%; height: 40px; border: 1px solid var(--color-border); border-radius: 4px; padding: 0 0.8rem; font-family: var(--font-body); font-size: 0.88rem;">
+                </div>
+                
+                <button type="submit" class="admin-theme-btn" style="background-color: var(--color-gold); border: none; color: #fff; width: 100%; height: 44px; border-radius: 4px; font-family: var(--font-accent); font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-weight: 600;">
+                    Generate Coupon
                 </button>
             </form>
         </div>
@@ -2249,21 +2734,7 @@
             document.querySelectorAll('.dropdown-menu-list').forEach(menu => menu.classList.remove('active'));
         });
 
-        // Search Filters Product Cards
-        function filterCardsGrid() {
-            const query = document.getElementById('dashboardSearch').value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.masterpiece-card');
-            
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name');
-                const type = card.getAttribute('data-type');
-                if (name.includes(query) || type.includes(query)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
+        // Global Search Filters will be bound at the bottom of the script
 
         // Select All checkboxes
         function toggleSelectAllProducts(headerCheckbox) {
@@ -2327,7 +2798,33 @@
         function openStatusUpdateModal(orderId, currentStatus) {
             document.getElementById('orderStatusForm').action = '/admin/orders/status/' + orderId;
             document.getElementById('order_status_select').value = currentStatus;
+            
+            const container = document.getElementById('trackingFieldsContainer');
+            if (container) {
+                container.style.display = currentStatus === 'Shipped' ? 'block' : 'none';
+            }
+            
             openModal('orderStatusModal');
+        }
+
+        // Initialize Order Status Selector change listener
+        document.addEventListener('DOMContentLoaded', () => {
+            const orderStatusSelect = document.getElementById('order_status_select');
+            const trackingFieldsContainer = document.getElementById('trackingFieldsContainer');
+            if (orderStatusSelect && trackingFieldsContainer) {
+                orderStatusSelect.addEventListener('change', () => {
+                    if (orderStatusSelect.value === 'Shipped') {
+                        trackingFieldsContainer.style.display = 'block';
+                    } else {
+                        trackingFieldsContainer.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        function toggleCouponModal(show) {
+            const modal = document.getElementById('createCouponModal');
+            if (modal) modal.style.display = show ? 'flex' : 'none';
         }
 
         function openBookingStatusModal(bookingId, currentStatus) {
@@ -2435,6 +2932,110 @@
             const sim = document.querySelector('.floating-payment-simulator');
             if (sim) {
                 sim.classList.toggle('minimized');
+            }
+        }
+
+        // --- NEW WORKING INTERACTIVE CONTROLS (Notifications, Calendar, Mail, Search) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Dynamic Header Dropdowns Logic
+            const adminBellBtn = document.getElementById('adminBellBtn');
+            const adminMailBtn = document.getElementById('adminMailBtn');
+            const adminProfileBtn = document.getElementById('adminProfileBtn');
+            
+            const bellDropdown = document.getElementById('bellDropdown');
+            const mailDropdown = document.getElementById('mailDropdown');
+            const profileDropdown = document.getElementById('profileDropdown');
+
+            const closeAllHeaderDropdowns = () => {
+                if (bellDropdown) bellDropdown.style.display = 'none';
+                if (mailDropdown) mailDropdown.style.display = 'none';
+                if (profileDropdown) profileDropdown.style.display = 'none';
+            };
+
+            if (adminBellBtn) {
+                adminBellBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const show = bellDropdown.style.display === 'none' || !bellDropdown.style.display;
+                    closeAllHeaderDropdowns();
+                    if (show) bellDropdown.style.display = 'block';
+                });
+            }
+
+            if (adminMailBtn) {
+                adminMailBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const show = mailDropdown.style.display === 'none' || !mailDropdown.style.display;
+                    closeAllHeaderDropdowns();
+                    if (show) mailDropdown.style.display = 'block';
+                });
+            }
+
+            if (adminProfileBtn) {
+                adminProfileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const show = profileDropdown.style.display === 'none' || !profileDropdown.style.display;
+                    closeAllHeaderDropdowns();
+                    if (show) profileDropdown.style.display = 'block';
+                });
+            }
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', () => {
+                closeAllHeaderDropdowns();
+            });
+
+            // 2. Calendar Icon Redirect
+            const adminCalendarBtn = document.getElementById('adminCalendarBtn');
+            if (adminCalendarBtn) {
+                adminCalendarBtn.addEventListener('click', (e) => {
+                    const bookingsNavLink = document.querySelector('a[href="#bookings"]');
+                    if (bookingsNavLink) {
+                        bookingsNavLink.click();
+                    }
+                });
+            }
+            
+            // 3. Bind dynamic global search function
+            const dashboardSearchInput = document.getElementById('dashboardSearch');
+            if (dashboardSearchInput) {
+                dashboardSearchInput.addEventListener('keyup', () => {
+                    filterCardsGrid();
+                });
+            }
+        });
+
+        // Search Filters Product Cards & Tables Globally (Upgraded)
+        function filterCardsGrid() {
+            const query = document.getElementById('dashboardSearch').value.toLowerCase().trim();
+            const activePanel = document.querySelector('.tab-panel.active');
+            if (!activePanel) return;
+
+            // 1. Search products grid (.masterpiece-card)
+            const cards = activePanel.querySelectorAll('.masterpiece-card');
+            if (cards.length > 0) {
+                cards.forEach(card => {
+                    const name = card.getAttribute('data-name') || '';
+                    const type = card.getAttribute('data-type') || '';
+                    const id = card.getAttribute('data-id') || '';
+                    if (name.includes(query) || type.includes(query) || id.includes(query)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            // 2. Search tables (for orders, bookings, recoveries, subscribers)
+            const tableRows = activePanel.querySelectorAll('tbody tr');
+            if (tableRows.length > 0) {
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
             }
         }
     </script>

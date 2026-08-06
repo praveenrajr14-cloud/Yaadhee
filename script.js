@@ -4,6 +4,132 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ==========================================================================
+    // INTERACTIVE CINEMATIC WEBSITE DESIGN SUITE
+    // ==========================================================================
+
+    // 1. Cinematic Preloader & Page Transition HTML Injections
+    const injectCinematicLayers = () => {
+        const preloaderShown = sessionStorage.getItem('yadhee_preloader_shown');
+
+        // Always inject page transition overlay for smooth page loads
+        const transOverlay = document.createElement('div');
+        transOverlay.id = 'page-transition-overlay';
+        document.body.appendChild(transOverlay);
+
+        if (preloaderShown) {
+            // Skip logo animation preloader on subsequent page visits in the same session
+            return;
+        }
+
+        // Enforce cursor hidden during initial loading screen
+        document.body.classList.add('loading-active');
+
+        const preloader = document.createElement('div');
+        preloader.id = 'cinematic-preloader';
+        
+        // Split "Yadhee" to character spans for stagger animation
+        const logoText = "Yadhee";
+        const charsHTML = logoText.split('').map((char, index) => {
+            return `<span class="preloader-char" style="animation-delay: ${0.1 + (index * 0.08)}s">${char}</span>`;
+        }).join('');
+
+        preloader.innerHTML = `
+            <div class="preloader-inner">
+                <span class="preloader-logo">${charsHTML}</span>
+            </div>
+        `;
+        document.body.prepend(preloader);
+
+        setTimeout(() => {
+            preloader.classList.add('loaded');
+            document.body.classList.remove('loading-active');
+            setTimeout(() => preloader.remove(), 600);
+            sessionStorage.setItem('yadhee_preloader_shown', 'true');
+        }, 1100);
+    };
+    injectCinematicLayers();
+
+    // 2. Custom Multi-Page Transition link interceptors
+    const setupTransitionInterceptors = () => {
+        const transitionOverlay = document.getElementById('page-transition-overlay');
+        document.querySelectorAll('a').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && href.startsWith('/') && !link.classList.contains('logout-btn-text') && !link.getAttribute('target')) {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (transitionOverlay) {
+                        transitionOverlay.classList.add('active');
+                    }
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 500);
+                });
+            }
+        });
+    };
+    setupTransitionInterceptors();
+
+
+
+    // 4. Golden Dust canvas backdrop
+    const initGoldDustCanvas = () => {
+        const canvas = document.createElement('canvas');
+        canvas.id = 'gold-dust-canvas';
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const colors = ['rgba(197, 160, 89, 0.12)', 'rgba(212, 175, 55, 0.1)', 'rgba(122, 12, 30, 0.06)'];
+
+        const resize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        window.addEventListener('resize', resize);
+        resize();
+
+        for (let i = 0; i < 55; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 0.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speedX: Math.random() * 0.3 - 0.15,
+                speedY: Math.random() * 0.3 - 0.2,
+                opacity: Math.random() * 0.5 + 0.3,
+                fadeDir: Math.random() > 0.5 ? 0.004 : -0.004
+            });
+        }
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+
+                p.opacity += p.fadeDir;
+                if (p.opacity > 0.7) p.fadeDir = -0.004;
+                if (p.opacity < 0.2) p.fadeDir = 0.004;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = Math.max(0, p.opacity);
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        };
+        animate();
+    };
+    // initGoldDustCanvas(); // Disabled to fix performance lag
+
+
+
     // --- PRODUCT DATA STORAGE ---
     let productsData = {};
 
@@ -62,39 +188,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // -------------------------------------------------------------
-    // I. CUSTOM DOUBLE CURSOR механики
+    // I. DYNAMIC BACKGROUND BLOBS, LERP CURSOR & 3D TILT
     // -------------------------------------------------------------
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
+    
+    // 1. Dynamic Blob Generation
+    const injectLiquidBackground = () => {
+        const bgContainer = document.createElement('div');
+        bgContainer.className = 'liquid-bg-container';
         
-        cursorDot.style.left = e.clientX + 'px';
-        cursorDot.style.top = e.clientY + 'px';
-    });
-
-    const addCursorListeners = () => {
-        const interactiveElements = document.querySelectorAll('a, button, input, select, textarea, .product-card, .filter-btn, .lookbook-dot');
-        interactiveElements.forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                document.body.classList.add('hovering-interactive');
-            });
-            el.addEventListener('mouseleave', () => {
-                document.body.classList.remove('hovering-interactive');
-            });
-        });
+        const rubyBlob = document.createElement('div');
+        rubyBlob.className = 'liquid-blob blob-ruby';
+        
+        const goldBlob = document.createElement('div');
+        goldBlob.className = 'liquid-blob blob-gold';
+        
+        const violetBlob = document.createElement('div');
+        violetBlob.className = 'liquid-blob blob-violet';
+        
+        bgContainer.appendChild(rubyBlob);
+        bgContainer.appendChild(goldBlob);
+        bgContainer.appendChild(violetBlob);
+        document.body.appendChild(bgContainer);
     };
-    addCursorListeners();
+    injectLiquidBackground();
 
+    // 2. Custom Liquid Cursor (Disabled for normal arrow cursor)
+    const addCursorListeners = () => {
+        // Disabled for default arrow cursor
+    };
+
+    // 3. 3D Spatial Card Tilt Effect (Disabled to resolve lag)
+    const addCardTiltListeners = () => {
+        // Disabled for high-performance lag-free experience
+    };
+
+
+    let lastScrollY = window.scrollY;
 
     // -------------------------------------------------------------
     // II. SCROLL DRIVEN LAYOUT EFFECTS & PARALLAX
     // -------------------------------------------------------------
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 80) {
+        const currentScrollY = window.scrollY;
+
+        if (currentScrollY > 80) {
             mainHeader.classList.add('scrolled');
         } else {
             mainHeader.classList.remove('scrolled');
         }
+
+        if (currentScrollY > lastScrollY && currentScrollY > 180) {
+            mainHeader.classList.add('header-hidden');
+        } else {
+            mainHeader.classList.remove('header-hidden');
+        }
+
+        lastScrollY = currentScrollY;
 
         // Custom Parallax Scroll handler
         const parallaxImgs = document.querySelectorAll('.parallax-img');
@@ -113,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, { threshold: 0.1 });
 
-    document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+    document.querySelectorAll('.reveal-on-scroll, .cinematic-reveal').forEach(el => {
         revealObserver.observe(el);
     });
 
@@ -992,6 +1141,377 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateWishlistUI();
             bindGlobalProductCardEvents();
+
+            // Cart Page Init
+            const initCartPage = () => {
+                const cartPageGrid = document.getElementById('cartPageGrid');
+                const cartPageEmpty = document.getElementById('cartPageEmpty');
+                const cartPageItems = document.getElementById('cartPageItems');
+                const cartPageSubtotal = document.getElementById('cartPageSubtotal');
+                const cartPageDiscount = document.getElementById('cartPageDiscount');
+                const cartPageTotal = document.getElementById('cartPageTotal');
+                const cartPageTotalUSD = document.getElementById('cartPageTotalUSD');
+
+                if (!cartPageGrid || !cartPageEmpty || !cartPageItems) return;
+
+                const updateCartPageUI = () => {
+                    if (cart.length === 0) {
+                        cartPageGrid.style.display = 'none';
+                        cartPageEmpty.style.display = 'block';
+                        return;
+                    }
+
+                    cartPageGrid.style.display = 'grid';
+                    cartPageEmpty.style.display = 'none';
+
+                    cartPageItems.innerHTML = '';
+                    let rawTotalINR = 0;
+                    let rawTotalUSD = 0;
+
+                    cart.forEach(item => {
+                        const product = productsData[item.id];
+                        if (!product) return;
+
+                        const itemTotalINR = product.priceINR * item.qty;
+                        rawTotalINR += itemTotalINR;
+                        rawTotalUSD += product.priceUSD * item.qty;
+
+                        const itemHTML = `
+                            <div class="cart-page-item" data-id="${item.id}">
+                                <div class="item-details-box">
+                                    <div class="item-img-container">
+                                        <img src="/${product.img}" alt="${product.name}" class="item-img">
+                                    </div>
+                                    <div class="item-text">
+                                        <a href="/${product.category === 'saree' ? 'sarees' : 'jewels'}#${product.id}" class="item-title">${product.name}</a>
+                                        <span class="item-sub">${product.type}</span>
+                                        <span class="item-unit-price">₹${product.priceINR.toLocaleString('en-IN')}</span>
+                                    </div>
+                                </div>
+                                <div class="item-qty-box">
+                                    <div class="qty-selector">
+                                        <button type="button" class="qty-btn page-qty-minus"><i class="fa-solid fa-minus"></i></button>
+                                        <span class="qty-value">${item.qty}</span>
+                                        <button type="button" class="qty-btn page-qty-plus"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                    <button type="button" class="remove-text-btn page-item-remove">Remove</button>
+                                </div>
+                                <div class="item-total-price-box">
+                                    <span class="item-total-price">₹${itemTotalINR.toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                        `;
+                        cartPageItems.insertAdjacentHTML('beforeend', itemHTML);
+                    });
+
+                    const DISCOUNT_RATE = 0.05;
+                    const discountINR = Math.round(rawTotalINR * DISCOUNT_RATE);
+                    const totalINR = rawTotalINR - discountINR;
+                    const totalUSD = parseFloat((rawTotalUSD * (1 - DISCOUNT_RATE)).toFixed(2));
+
+                    cartPageSubtotal.textContent = `₹${rawTotalINR.toLocaleString('en-IN')}`;
+                    cartPageDiscount.textContent = `-₹${discountINR.toLocaleString('en-IN')}`;
+                    cartPageTotal.textContent = `₹${totalINR.toLocaleString('en-IN')}`;
+                    if (cartPageTotalUSD) {
+                        cartPageTotalUSD.textContent = `$${totalUSD.toLocaleString()} USD`;
+                    }
+
+                    cartPageItems.querySelectorAll('.cart-page-item').forEach(itemNode => {
+                        const pid = itemNode.getAttribute('data-id');
+                        
+                        itemNode.querySelector('.page-qty-minus').addEventListener('click', () => {
+                            adjustQty(pid, -1);
+                            updateCartPageUI();
+                        });
+
+                        itemNode.querySelector('.page-qty-plus').addEventListener('click', () => {
+                            adjustQty(pid, 1);
+                            updateCartPageUI();
+                        });
+
+                        itemNode.querySelector('.page-item-remove').addEventListener('click', () => {
+                            removeFromCart(pid);
+                            updateCartPageUI();
+                        });
+                    });
+
+                    addCursorListeners();
+                };
+
+                updateCartPageUI();
+            };
+
+            // Checkout Page Init
+            const initCheckoutPage = () => {
+                const checkoutPageGrid = document.getElementById('checkoutPageGrid');
+                const checkoutPageEmpty = document.getElementById('checkoutPageEmpty');
+                const checkoutPageItemsList = document.getElementById('checkoutPageItemsList');
+                const checkoutPageSubtotal = document.getElementById('checkoutPageSubtotal');
+                const checkoutPageDiscount = document.getElementById('checkoutPageDiscount');
+                const checkoutPageTotal = document.getElementById('checkoutPageTotal');
+                const checkoutPageTotalUSD = document.getElementById('checkoutPageTotalUSD');
+                const checkoutPageForm = document.getElementById('checkoutPageForm');
+                
+                let appliedCoupon = null;
+
+                if (!checkoutPageGrid || !checkoutPageEmpty || !checkoutPageItemsList) return;
+
+                // Coupon application handler
+                const couponCodeInput = document.getElementById('couponCodeInput');
+                const applyCouponBtn = document.getElementById('applyCouponBtn');
+                const couponStatusMessage = document.getElementById('couponStatusMessage');
+                const checkoutPageCouponRow = document.getElementById('checkoutPageCouponRow');
+                const couponCodeLabel = document.getElementById('couponCodeLabel');
+                const checkoutPageCouponDiscount = document.getElementById('checkoutPageCouponDiscount');
+
+                if (applyCouponBtn && couponCodeInput) {
+                    applyCouponBtn.addEventListener('click', () => {
+                        const code = couponCodeInput.value.trim();
+                        if (!code) {
+                            showCouponStatus("Please enter a coupon code.", "error");
+                            return;
+                        }
+                        
+                        applyCouponBtn.disabled = true;
+                        applyCouponBtn.textContent = "...";
+                        
+                        fetch('/api/coupons/validate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code })
+                        })
+                        .then(res => {
+                            applyCouponBtn.disabled = false;
+                            applyCouponBtn.textContent = "Apply";
+                            return res.json();
+                        })
+                        .then(data => {
+                            if (data.error) {
+                                appliedCoupon = null;
+                                showCouponStatus(data.error, "error");
+                                updateCheckoutPageUI();
+                            } else {
+                                appliedCoupon = {
+                                    code: data.code,
+                                    discount_type: data.discount_type,
+                                    value: data.value
+                                };
+                                showCouponStatus(`🎉 Coupon "${data.code}" applied!`, "success");
+                                updateCheckoutPageUI();
+                            }
+                        })
+                        .catch(err => {
+                            applyCouponBtn.disabled = false;
+                            applyCouponBtn.textContent = "Apply";
+                            showCouponStatus("Server validation error.", "error");
+                        });
+                    });
+                }
+
+                const showCouponStatus = (msg, type) => {
+                    if (!couponStatusMessage) return;
+                    couponStatusMessage.textContent = msg;
+                    couponStatusMessage.style.display = 'block';
+                    if (type === 'success') {
+                        couponStatusMessage.style.color = '#4caf50';
+                    } else {
+                        couponStatusMessage.style.color = 'var(--color-crimson)';
+                    }
+                };
+
+                const updateCheckoutPageUI = () => {
+                    if (cart.length === 0) {
+                        checkoutPageGrid.style.display = 'none';
+                        checkoutPageEmpty.style.display = 'block';
+                        return;
+                    }
+
+                    checkoutPageGrid.style.display = 'grid';
+                    checkoutPageEmpty.style.display = 'none';
+
+                    checkoutPageItemsList.innerHTML = '';
+                    let rawTotalINR = 0;
+                    let rawTotalUSD = 0;
+
+                    cart.forEach(item => {
+                        const product = productsData[item.id];
+                        if (!product) return;
+
+                        const itemTotalINR = product.priceINR * item.qty;
+                        rawTotalINR += itemTotalINR;
+                        rawTotalUSD += product.priceUSD * item.qty;
+
+                        const itemHTML = `
+                            <div class="checkout-item-mini-row">
+                                <div class="mini-img-box">
+                                    <img src="/${product.img}" alt="${product.name}" class="mini-img">
+                                </div>
+                                <div class="mini-details">
+                                    <h4 class="mini-title">${product.name}</h4>
+                                    <span class="mini-meta">${product.type} • Qty: ${item.qty}</span>
+                                </div>
+                                <span class="mini-total-price">₹${itemTotalINR.toLocaleString('en-IN')}</span>
+                            </div>
+                        `;
+                        checkoutPageItemsList.insertAdjacentHTML('beforeend', itemHTML);
+                    });
+
+                    const DISCOUNT_RATE = 0.05;
+                    const discountINR = Math.round(rawTotalINR * DISCOUNT_RATE);
+                    
+                    let couponDiscountINR = 0;
+                    let couponDiscountUSD = 0;
+                    
+                    if (appliedCoupon) {
+                        if (appliedCoupon.discount_type === 'percent') {
+                            couponDiscountINR = Math.round((rawTotalINR - discountINR) * (appliedCoupon.value / 100));
+                            couponDiscountUSD = parseFloat(((rawTotalUSD * (1 - DISCOUNT_RATE)) * (appliedCoupon.value / 100)).toFixed(2));
+                        } else {
+                            couponDiscountINR = Math.min(appliedCoupon.value, rawTotalINR - discountINR);
+                            couponDiscountUSD = parseFloat(Math.min(appliedCoupon.value / 83, rawTotalUSD * (1 - DISCOUNT_RATE)).toFixed(2));
+                        }
+                    }
+
+                    const totalINR = rawTotalINR - discountINR - couponDiscountINR;
+                    const totalUSD = parseFloat((rawTotalUSD * (1 - DISCOUNT_RATE) - couponDiscountUSD).toFixed(2));
+
+                    checkoutPageSubtotal.textContent = `₹${rawTotalINR.toLocaleString('en-IN')}`;
+                    checkoutPageDiscount.textContent = `-₹${discountINR.toLocaleString('en-IN')}`;
+                    
+                    if (appliedCoupon && checkoutPageCouponRow && couponCodeLabel && checkoutPageCouponDiscount) {
+                        checkoutPageCouponRow.style.display = 'flex';
+                        couponCodeLabel.textContent = appliedCoupon.code;
+                        checkoutPageCouponDiscount.textContent = `-₹${couponDiscountINR.toLocaleString('en-IN')}`;
+                    } else if (checkoutPageCouponRow) {
+                        checkoutPageCouponRow.style.display = 'none';
+                    }
+
+                    checkoutPageTotal.textContent = `₹${totalINR.toLocaleString('en-IN')}`;
+                    if (checkoutPageTotalUSD) {
+                        checkoutPageTotalUSD.textContent = `$${totalUSD.toLocaleString()} USD`;
+                    }
+                };
+
+                if (checkoutPageForm) {
+                    checkoutPageForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+
+                        const submitBtn = checkoutPageForm.querySelector('.submit-secured-order-btn');
+                        const originalContent = submitBtn.innerHTML;
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing Payment...`;
+
+                        const name = document.getElementById('checkoutPageName').value;
+                        const email = document.getElementById('checkoutPageEmail').value;
+                        const phone = document.getElementById('checkoutPagePhone').value;
+                        const address = document.getElementById('checkoutPageAddress').value;
+                        const forceOutcome = document.getElementById('devForcePageOutcome') ? document.getElementById('devForcePageOutcome').value : 'success';
+
+                        const DISCOUNT_RATE = 0.05;
+                        let rawTotalINR = cart.reduce((acc, curr) => {
+                            const prod = productsData[curr.id];
+                            return acc + (prod ? prod.priceINR * curr.qty : 0);
+                        }, 0);
+                        let rawTotalUSD = cart.reduce((acc, curr) => {
+                            const prod = productsData[curr.id];
+                            return acc + (prod ? prod.priceUSD * curr.qty : 0);
+                        }, 0);
+
+                        const discountINR = Math.round(rawTotalINR * DISCOUNT_RATE);
+                        let couponDiscountINR = 0;
+                        let couponDiscountUSD = 0;
+
+                        if (appliedCoupon) {
+                            if (appliedCoupon.discount_type === 'percent') {
+                                couponDiscountINR = Math.round((rawTotalINR - discountINR) * (appliedCoupon.value / 100));
+                                couponDiscountUSD = parseFloat(((rawTotalUSD * (1 - DISCOUNT_RATE)) * (appliedCoupon.value / 100)).toFixed(2));
+                            } else {
+                                couponDiscountINR = Math.min(appliedCoupon.value, rawTotalINR - discountINR);
+                                couponDiscountUSD = parseFloat(Math.min(appliedCoupon.value / 83, rawTotalUSD * (1 - DISCOUNT_RATE)).toFixed(2));
+                            }
+                        }
+
+                        let totalINR = rawTotalINR - discountINR - couponDiscountINR;
+                        let totalUSD = parseFloat((rawTotalUSD * (1 - DISCOUNT_RATE) - couponDiscountUSD).toFixed(2));
+
+                        fetch('/api/checkout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name, email, phone, address, cart, totalINR, totalUSD, paymentForceOutcome: forceOutcome, couponCode: appliedCoupon ? appliedCoupon.code : null })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalContent;
+
+                            if (data.success) {
+                                showToast(`Order #${data.orderId} placed successfully!`);
+                                cart = [];
+                                localStorage.removeItem('yadhee_cart');
+                                updateCartUI();
+                                checkoutPageForm.reset();
+                                window.location.href = '/vault';
+                            } else {
+                                showToast(data.error || "Failed to place order.");
+                            }
+                        })
+                        .catch(err => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalContent;
+                            console.error(err);
+                            showToast("Payment processing error. Please try again.");
+                        });
+                    });
+
+                    const syncPageCart = () => {
+                        const name = document.getElementById('checkoutPageName')?.value || '';
+                        const email = document.getElementById('checkoutPageEmail')?.value || '';
+                        const phone = document.getElementById('checkoutPagePhone')?.value || '';
+                        const address = document.getElementById('checkoutPageAddress')?.value || '';
+
+                        if (email && cart.length > 0) {
+                            let totalINR = cart.reduce((acc, curr) => {
+                                const prod = productsData[curr.id];
+                                return acc + (prod ? prod.priceINR * curr.qty : 0);
+                            }, 0);
+                            let totalUSD = cart.reduce((acc, curr) => {
+                                const prod = productsData[curr.id];
+                                return acc + (prod ? prod.priceUSD * curr.qty : 0);
+                            }, 0);
+
+                            fetch('/api/abandoned-cart', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ name, email, phone, address, cart, totalINR, totalUSD })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                console.log("[Abandoned Cart Page] Synced successfully:", data);
+                            })
+                            .catch(err => console.error("[Abandoned Cart Page] Sync error:", err));
+                        }
+                    };
+
+                    setTimeout(() => {
+                        ['checkoutPageName', 'checkoutPageEmail', 'checkoutPagePhone', 'checkoutPageAddress'].forEach(id => {
+                            const input = document.getElementById(id);
+                            if (input) {
+                                input.addEventListener('blur', syncPageCart);
+                                input.addEventListener('change', syncPageCart);
+                            }
+                        });
+                    }, 1000);
+                }
+
+                updateCheckoutPageUI();
+            };
+
+            // Path Check Triggers
+            if (window.location.pathname === '/cart') {
+                initCartPage();
+            } else if (window.location.pathname === '/checkout') {
+                initCheckoutPage();
+            }
 
             // Auto-trigger product modal if deep-linked hash anchor exists
             const hash = window.location.hash;

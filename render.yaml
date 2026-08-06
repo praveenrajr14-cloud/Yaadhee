@@ -11,16 +11,18 @@ services:
     # Build: install deps + compile sqlite3 native binary for Linux
     buildCommand: npm install && npm rebuild sqlite3 --build-from-source
 
-    # Start: seed DB if missing, then launch server
-    startCommand: node -e "const fs=require('fs'); if(!fs.existsSync('yadhee.db')){ require('./db_init'); }" && node server.js
+    # Start: seed DB on every cold start (ephemeral disk), then launch server
+    startCommand: node db_init.js && node server.js
 
     # Health check endpoint
     healthCheckPath: /
 
-    # Environment variables
+    # Environment variables (add secrets in Render dashboard — NOT here)
     envVars:
       - key: NODE_ENV
         value: production
+      - key: SESSION_SECRET
+        generateValue: true   # Render auto-generates a secure random value
 
     # Auto-deploy on every push to main branch
     autoDeploy: true

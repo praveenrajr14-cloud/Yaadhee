@@ -1,0 +1,76 @@
+<%- include('partials/header', { activePage: 'cart', title: 'Shopping Bag | Yadhee Luxury Heritage' }) %>
+
+<div class="cart-page-banner" style="background-image: linear-gradient(rgba(30, 2, 6, 0.88), rgba(30, 2, 6, 0.7)), url('assets/hero_saree.png');">
+    <div class="banner-content text-center">
+        <span class="section-accent">Your Selection</span>
+        <h1 class="page-main-title">Shopping Bag</h1>
+        <p class="banner-subtitle">Inspect your selected weaves and jewels before committing to checkout.</p>
+    </div>
+</div>
+
+<div class="cart-page-container">
+    <div class="section-container">
+        <div class="cart-page-grid" id="cartPageGrid" style="display: none;">
+            <!-- Left Side: Cart items table -->
+            <div class="cart-ledger-column">
+                <div class="ledger-header">
+                    <span>Selected Masterpiece</span>
+                    <span style="text-align: center;">Quantity</span>
+                    <span style="text-align: right;">Total Price</span>
+                </div>
+                <div class="ledger-items-list" id="cartPageItems">
+                    <!-- Populated dynamically by script.js -->
+                </div>
+            </div>
+
+            <!-- Right Side: Checkout invoice summary -->
+            <div class="cart-summary-column">
+                <div class="luxury-summary-card">
+                    <h3 class="summary-title">Acquisition Summary</h3>
+                    
+                    <div class="summary-price-breakdown">
+                        <div class="summary-line">
+                            <span class="line-label">Bag Subtotal</span>
+                            <span class="line-value" id="cartPageSubtotal">₹0</span>
+                        </div>
+                        <div class="summary-line discount-line">
+                            <span class="line-label"><i class="fa-solid fa-gift"></i> Sovereign Discount (5%)</span>
+                            <span class="line-value" id="cartPageDiscount">-₹0</span>
+                        </div>
+                        <hr class="summary-divider">
+                        <div class="summary-line total-line">
+                            <span class="line-label">Estimated Total</span>
+                            <div class="total-price-box">
+                                <span class="line-value main-total" id="cartPageTotal">₹0</span>
+                                <span class="usd-subtotal" id="cartPageTotalUSD">$0 USD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="summary-disclaimer">Complimentary insured packaging & shipping worldwide. Bespoke stitching & jewelry sizing are coordinated post-checkout.</p>
+                    
+                    <a href="/checkout" class="btn btn-primary secure-checkout-btn">
+                        Proceed to secure checkout <i class="fa-solid fa-shield-halved"></i>
+                    </a>
+                    
+                    <a href="/sarees" class="continue-shopping-btn">
+                        <i class="fa-solid fa-arrow-left-long"></i> Return to Loom Collections
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty Cart State -->
+        <div class="cart-page-empty-state" id="cartPageEmpty" style="display: block;">
+            <i class="fa-solid fa-receipt empty-icon"></i>
+            <h2>Your Shopping Bag is Empty</h2>
+            <p>You have not reserved any royal sarees or heritage jewels yet. Begin your journey by exploring our looms.</p>
+            <div class="empty-actions">
+                <a href="/sarees" class="btn btn-primary">Browse Weaves</a>
+                <a href="/jewels" class="btn btn-secondary">Browse Jewels</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

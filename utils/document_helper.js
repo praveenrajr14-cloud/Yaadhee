@@ -24,7 +24,7 @@ if (!fs.existsSync(emailsDir)) {
  * @param {Array} items The list of purchased order items
  * @returns {Promise<string>} Relative path to the generated PDF
  */
-function generateInvoicePDF(order, items) {
+function generateInvoicePDF(order, items, taxRatePercent = 5) {
     return new Promise((resolve, reject) => {
         try {
             const doc = new PDFDocument({ margin: 50, size: 'A4' });
@@ -172,10 +172,13 @@ function generateInvoicePDF(order, items) {
                .text('All prices inclusive of custom protective packaging, velvet box casings,', 50, summaryStartY + 12)
                .text('and fully insured express shipping.', 50, summaryStartY + 22);
 
-            // Right summary column: Math and subtotals
-            const taxRate = 0.18; // 18% Luxury GST
-            const gstINR = Math.round(subtotalINR * taxRate);
-            const grandTotalINR = subtotalINR + gstINR;
+            // Right summary column: Math and subtotals (tax-inclusive back-calculation)
+            const rawTotalINR = items.reduce((acc, item) => acc + (item.price_inr * item.quantity), 0);
+            const paidTotalINR = order.total_price_inr;
+            const totalDiscountsINR = Math.max(0, rawTotalINR - paidTotalINR);
+            
+            // GST back-calculation from final paid total
+            const gstINR = Math.round(paidTotalINR * (taxRatePercent / (100 + taxRatePercent)));
             const totalUSD = order.total_price_usd;
 
             const labelX = 350;
@@ -183,43 +186,58 @@ function generateInvoicePDF(order, items) {
             
             // Subtotal
             doc.font('Helvetica-Bold').fontSize(9).fillColor(colorCharcoal)
-               .text('Subtotal:', labelX, summaryStartY, { width: 110, align: 'right' })
+               .text('Items Subtotal:', labelX, summaryStartY, { width: 110, align: 'right' })
                .font('Helvetica')
-               .text(`₹${subtotalINR.toLocaleString('en-IN')}`, valueX, summaryStartY, { width: 75, align: 'right' });
+               .text(`₹${rawTotalINR.toLocaleString('en-IN')}`, valueX, summaryStartY, { width: 75, align: 'right' });
 
-            // GST (18%)
+            let currentY = summaryStartY + 15;
+            
+            // Show deductions if any discounts were applied
+            if (totalDiscountsINR > 0) {
+                doc.font('Helvetica-Bold')
+                   .text('Discounts & Promos:', labelX, currentY, { width: 110, align: 'right' })
+                   .font('Helvetica')
+                   .text(`-₹${totalDiscountsINR.toLocaleString('en-IN')}`, valueX, currentY, { width: 75, align: 'right' });
+                currentY += 15;
+            }
+
+            // GST
             doc.font('Helvetica-Bold')
-               .text('Luxury GST (18%):', labelX, summaryStartY + 15, { width: 110, align: 'right' })
+               .text(`GST (${taxRatePercent}% Inc.):`, labelX, currentY, { width: 110, align: 'right' })
                .font('Helvetica')
-               .text(`₹${gstINR.toLocaleString('en-IN')}`, valueX, summaryStartY + 15, { width: 75, align: 'right' });
+               .text(`₹${gstINR.toLocaleString('en-IN')}`, valueX, currentY, { width: 75, align: 'right' });
+            currentY += 15;
 
             // Courier
             doc.font('Helvetica-Bold')
-               .text('Courier (Insured):', labelX, summaryStartY + 30, { width: 110, align: 'right' })
+               .text('Courier (Insured):', labelX, currentY, { width: 110, align: 'right' })
                .font('Helvetica-Bold')
                .fillColor('#67C23A')
-               .text('FREE', valueX, summaryStartY + 30, { width: 75, align: 'right' });
+               .text('FREE', valueX, currentY, { width: 75, align: 'right' });
+            currentY += 15;
 
             // Divider before Total
-            doc.moveTo(350, summaryStartY + 45)
-               .lineTo(545, summaryStartY + 45)
+            doc.moveTo(350, currentY)
+               .lineTo(545, currentY)
                .strokeColor(colorGold)
                .lineWidth(1)
                .stroke();
+            currentY += 7;
 
             // Grand Total INR
             doc.font('Helvetica-Bold')
                .fontSize(11)
                .fillColor(colorCrimson)
-               .text('Grand Total (INR):', labelX, summaryStartY + 52, { width: 110, align: 'right' })
-               .text(`₹${grandTotalINR.toLocaleString('en-IN')}`, valueX, summaryStartY + 52, { width: 75, align: 'right' });
+               .text('Grand Total (INR):', labelX, currentY, { width: 110, align: 'right' })
+               .text(`₹${paidTotalINR.toLocaleString('en-IN')}`, valueX, currentY, { width: 75, align: 'right' });
+            currentY += 16;
 
             // Grand Total USD
             doc.font('Helvetica-Bold')
                .fontSize(9)
                .fillColor(colorGold)
-               .text('USD Equivalent:', labelX, summaryStartY + 68, { width: 110, align: 'right' })
-               .text(`$${totalUSD.toLocaleString()}`, valueX, summaryStartY + 68, { width: 75, align: 'right' });
+               .text('USD Equivalent:', labelX, currentY, { width: 110, align: 'right' })
+               .text(`$${totalUSD.toLocaleString()}`, valueX, currentY, { width: 75, align: 'right' });
 
             // 5. Footer Signature Notes
             doc.moveTo(50, 715)
@@ -251,6 +269,47 @@ function generateInvoicePDF(order, items) {
             reject(err);
         }
     });
+}
+
+let cachedTransporter = null;
+
+async function getEmailTransporter() {
+    if (cachedTransporter) {
+        return cachedTransporter;
+    }
+    
+    // Check if real SMTP config exists in environment
+    if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+        cachedTransporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT) || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+        console.log(`[SMTP Configured] Using custom production SMTP portal: ${process.env.SMTP_HOST}`);
+        return cachedTransporter;
+    }
+    
+    try {
+        console.log("[SMTP] Initializing Ethereal sandbox test account...");
+        const testAccount = await nodemailer.createTestAccount();
+        cachedTransporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false,
+            auth: {
+                user: testAccount.user,
+                pass: testAccount.pass
+            }
+        });
+        console.log(`[SMTP Configured] Using cached Ethereal sandbox SMTP portal: ${testAccount.user}`);
+    } catch(smtpSetupErr) {
+        console.warn(`[SMTP Offline] SMTP creation skipped (${smtpSetupErr.message}). Logging files locally.`);
+    }
+    return cachedTransporter;
 }
 
 /**
@@ -390,25 +449,7 @@ async function sendInvoiceEmail(order, invoicePath) {
     console.log(`[Email Mock] Saved visual log email to: ${mockEmailPath}`);
 
     try {
-        let transporter;
-        let testAccount;
-        
-        try {
-            // Setup testing SMTP account from Ethereal Email sandbox
-            testAccount = await nodemailer.createTestAccount();
-            transporter = nodemailer.createTransport({
-                host: 'smtp.ethereal.email',
-                port: 587,
-                secure: false, 
-                auth: {
-                    user: testAccount.user,
-                    pass: testAccount.pass
-                }
-            });
-            console.log(`[SMTP Configured] Using Ethereal sandbox SMTP portal: ${testAccount.user}`);
-        } catch(smtpSetupErr) {
-            console.warn(`[SMTP Offline] SMTP creation skipped (${smtpSetupErr.message}). Logging files locally.`);
-        }
+        const transporter = await getEmailTransporter();
 
         if (transporter) {
             // Dispatch SMTP message
@@ -620,8 +661,183 @@ function generatePOPDF(po) {
     });
 }
 
+/**
+ * Dispatches an automated elegant email alert when order changes to Shipped status.
+ * @param {Object} order The order record from SQLite (with tracking_id and carrier columns filled)
+ * @returns {Promise<Object>} Status object
+ */
+async function sendShipmentEmail(order) {
+    const orderId = order.id;
+    
+    // HTML email template with matching Crimson/Gold premium theme
+    const htmlEmail = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,300;1,600&family=Pinyon+Script&display=swap" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                background-color: #FDFBF7;
+                color: #2A2425;
+                margin: 0;
+                padding: 0;
+            }
+            .wrapper {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #FFFFFF;
+                border: 1px solid #C5A059;
+                padding: 40px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            }
+            .header {
+                text-align: center;
+                border-bottom: 2px solid #C5A059;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+            }
+            .logo {
+                font-family: 'Cormorant Garamond', Georgia, serif;
+                font-size: 36px;
+                font-style: italic;
+                font-weight: 300;
+                letter-spacing: 0.05em;
+                color: #7A0C1E;
+                margin: 0;
+            }
+            .subtitle {
+                font-size: 10px;
+                letter-spacing: 0.3em;
+                color: #C5A059;
+                text-transform: uppercase;
+                margin-top: 5px;
+            }
+            .title {
+                font-size: 18px;
+                color: #7A0C1E;
+                margin-bottom: 20px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            p {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #2A2425;
+                font-weight: 300;
+            }
+            .order-meta {
+                background-color: #F4F1EC;
+                padding: 15px;
+                border-left: 4px solid #7A0C1E;
+                margin: 20px 0;
+                font-size: 13px;
+                line-height: 1.5;
+            }
+            .tracking-btn {
+                display: inline-block;
+                background-color: #7A0C1E;
+                color: #FFFFFF !important;
+                padding: 12px 24px;
+                border-radius: 4px;
+                text-decoration: none;
+                font-weight: bold;
+                font-size: 14px;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                margin: 20px auto;
+                text-align: center;
+            }
+            .footer {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 1px solid #DDD9D2;
+                text-align: center;
+                font-size: 11px;
+                color: #8E877D;
+            }
+            .signature {
+                font-family: Georgia, serif;
+                font-style: italic;
+                color: #C5A059;
+                font-size: 15px;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="header">
+                <div class="logo" style="font-family: 'Pinyon Script', cursive; font-size: 42px; text-transform: none; font-weight: normal; color: #7A0C1E; text-align: center; margin: 0 auto 5px auto;">Yadhee</div>
+                <div class="subtitle">Heritage of Weaves & Jewels</div>
+            </div>
+            
+            <div class="title">Your Masterpiece is on its Way!</div>
+            
+            <p>Dear <strong>${order.customer_name}</strong>,</p>
+            
+            <p>We are delighted to inform you that your custom luxury order has been completed by our weavers and curators, and has been dispatched from the Yadhee Atelier in fully insured transit.</p>
+            
+            <div class="order-meta">
+                <strong>Order ID:</strong> YDH-ORD-2026-${orderId}<br>
+                <strong>Courier Partner:</strong> ${order.carrier}<br>
+                <strong>Tracking Reference:</strong> ${order.tracking_id}<br>
+                <strong>Transit Address:</strong> ${order.shipping_address}
+            </div>
+            
+            <p>You can track the progress of your insured dispatch by clicking the link below:</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="${order.tracking_id.startsWith('http') ? order.tracking_id : 'https://www.bluedart.com/tracking?id=' + order.tracking_id}" class="tracking-btn" target="_blank">Track Shipment Partner</a>
+            </div>
+            
+            <p>Our concierge desk will continue to monitor the package until it is hand-delivered safely to your door.</p>
+            
+            <p class="signature">Best regards,</p>
+            <p style="font-weight: bold; color: #7A0C1E; margin-top: 5px;">The Yadhee Team</p>
+            
+            <div class="footer">
+                Yadhee Support • Taj Mahal Palace, Colaba, Mumbai<br>
+                This is an automated shipment notification email.
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    // Save visual copy of shipment E-mail in local filesystem for previewing
+    const mockEmailPath = path.join(emailsDir, `shipment-email-${orderId}.html`);
+    fs.writeFileSync(mockEmailPath, htmlEmail, 'utf8');
+    console.log(`[Email Mock] Saved visual log shipment email to: ${mockEmailPath}`);
+
+    try {
+        const transporter = await getEmailTransporter();
+        if (transporter) {
+            await transporter.sendMail({
+                from: '"Yadhee Heritage Curators" <shipping@yadhee.com>',
+                to: order.customer_email,
+                subject: `Your Yadhee Order #YDH-ORD-2026-${orderId} Has Shipped!`,
+                html: htmlEmail
+            });
+            console.log(`[SMTP Success] Shipment notification dispatched to: ${order.customer_email}`);
+            return { success: true };
+        } else {
+            console.log(`[SMTP Offline Log] Shipment notification generated offline: ${order.customer_email}`);
+            return { success: true };
+        }
+    } catch(err) {
+        console.error(`[Email Dispatch Error] Failed to send shipment email: ${err.message}`);
+        return { success: false, error: err.message };
+    }
+}
+
 module.exports = {
     generateInvoicePDF,
     sendInvoiceEmail,
-    generatePOPDF
+    generatePOPDF,
+    getEmailTransporter,
+    sendShipmentEmail
 };

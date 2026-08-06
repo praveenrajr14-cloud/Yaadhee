@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { generateInvoicePDF, sendInvoiceEmail, generatePOPDF } = require('./utils/document_helper');
+const { generateInvoicePDF, sendInvoiceEmail, generatePOPDF, getEmailTransporter, sendShipmentEmail } = require('./utils/document_helper');
 const config = require('./config');
 
 const app = express();
@@ -94,6 +94,29 @@ function getDbConnection() {
     });
 })();
 
+// Global Store Settings Caching Engine
+let storeSettings = {
+    admin_whatsapp_number: "+91 7356146076",
+    shipping_fee_inr: "0",
+    tax_rate_percent: "5",
+    store_email: "sijokurishingal91@gmail.com"
+};
+
+function loadStoreSettings() {
+    const db = getDbConnection();
+    db.all("SELECT * FROM store_settings", (err, rows) => {
+        if (rows) {
+            rows.forEach(row => {
+                storeSettings[row.key] = row.value;
+            });
+        }
+        db.close();
+        console.log("[Settings Cache] Loaded from DB:", storeSettings);
+    });
+}
+// Run initially on startup
+loadStoreSettings();
+
 // Multer Storage Configuration for Admin Image Uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -113,16 +136,25 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Session Management
+// Session Management with persistent SQLite session store
+const SQLiteStore = require('connect-sqlite3')(session);
+const sessionDb = new sqlite3.Database(path.join(__dirname, 'sessions.db'));
 app.use(session({
-    secret: 'yadhee_secret_key_heritage_2026_royal',
+    store: new SQLiteStore({ db: sessionDb }),
+    secret: process.env.SESSION_SECRET || 'yadhee_secret_key_heritage_2026_royal',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    cookie: { 
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true
+    }
 }));
 
-// Serve Static Files from Root (preserves assets/ hero_saree.png, style.css, script.js references)
-app.use(express.static(__dirname));
+// Serve Static Files securely (only expose assets, css, and js; hide code & database)
+app.use('/style.css', express.static(path.join(__dirname, 'style.css')));
+app.use('/script.js', express.static(path.join(__dirname, 'script.js')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Expose configurations globally to all EJS templates
 app.use((req, res, next) => {
@@ -257,6 +289,16 @@ app.get('/contact', (req, res) => {
     res.render('contact');
 });
 
+// Full-page Shopping Cart page
+app.get('/cart', (req, res) => {
+    res.render('cart', { activePage: 'cart', title: 'Shopping Bag | Yadhee' });
+});
+
+// Full-page Secure Checkout page
+app.get('/checkout', (req, res) => {
+    res.render('checkout', { activePage: 'checkout', title: 'Secure Checkout | Yadhee' });
+});
+
 
 // -------------------------------------------------------------
 // USER / PATRON AUTHENTICATION ROUTES
@@ -272,20 +314,19 @@ app.get('/login', (req, res) => {
 
 // Login POST
 app.post('/login', (req, res) => {
-    const { usernameOrEmail, password } = req.body;
-    if (!usernameOrEmail || !password) {
-        return res.render('login', { error: "Please enter all credentials." });
-    }
+    const { usernameOrEmail, password, phone } = req.body;
     const db = getDbConnection();
-    db.get('SELECT * FROM users WHERE username = ? OR email = ?', [usernameOrEmail, usernameOrEmail], (err, user) => {
-        db.close();
-        if (err) {
-            return res.render('login', { error: "Security check error." });
-        }
-        if (!user) {
-            return res.render('login', { error: "Patron details not found." });
-        }
-        if (bcrypt.compareSync(password, user.password_hash)) {
+
+    if (phone) {
+        // Phone-based passwordless lookup
+        db.get('SELECT * FROM users WHERE phone = ? OR username = ?', [phone, phone], (err, user) => {
+            db.close();
+            if (err) {
+                return res.render('login', { error: "Security check error." });
+            }
+            if (!user) {
+                return res.render('login', { error: "Patron details not found for this phone number." });
+            }
             req.session.user = {
                 id: user.id,
                 username: user.username,
@@ -294,10 +335,35 @@ app.post('/login', (req, res) => {
                 address: user.address || ''
             };
             return res.redirect('/');
-        } else {
-            return res.render('login', { error: "Invalid password credentials." });
+        });
+    } else {
+        // Standard username/email + password validation
+        if (!usernameOrEmail || !password) {
+            db.close();
+            return res.render('login', { error: "Please enter all credentials." });
         }
-    });
+        db.get('SELECT * FROM users WHERE username = ? OR email = ?', [usernameOrEmail, usernameOrEmail], (err, user) => {
+            db.close();
+            if (err) {
+                return res.render('login', { error: "Security check error." });
+            }
+            if (!user) {
+                return res.render('login', { error: "Patron details not found." });
+            }
+            if (bcrypt.compareSync(password, user.password_hash)) {
+                req.session.user = {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    phone: user.phone || '',
+                    address: user.address || ''
+                };
+                return res.redirect('/');
+            } else {
+                return res.render('login', { error: "Invalid password credentials." });
+            }
+        });
+    }
 });
 
 // Register GET
@@ -654,7 +720,7 @@ app.get('/api/products/:id', (req, res) => {
 
 // Post-checkout asynchronous document & email dispatch engine
 function sendAdminNotification(orderId, order, items) {
-    const adminNumber = "+91 7356146076"; // Admin Phone Number
+    const adminNumber = storeSettings.admin_whatsapp_number || "+91 7356146076"; // Admin Phone Number
     const itemsDescription = items.map(item => `${item.name} (x${item.quantity})`).join(', ');
     
     console.log(`\n============================================================`);
@@ -672,7 +738,7 @@ function processPostCheckoutDocs(orderId, order, items) {
     // Send admin notification alert
     sendAdminNotification(orderId, order, items);
 
-    generateInvoicePDF(order, items)
+    generateInvoicePDF(order, items, parseFloat(storeSettings.tax_rate_percent || 5))
         .then((pdfPath) => {
 
             console.log(`[Document Pipeline] Generated PDF invoice at: ${pdfPath}`);
@@ -767,11 +833,9 @@ app.post('/api/checkout', (req, res) => {
             .then((paymentRes) => {
                 console.log(`[Payment Gateway] Simulated payment APPROVED. Txn ID: ${paymentRes.transactionId}`);
 
-                // Apply 5% Sovereign Discount server-side (billing parity with frontend)
-                const DISCOUNT_RATE = 0.05;
-                const finalTotalINR = Math.round(totalINR * (1 - DISCOUNT_RATE));
-                const finalTotalUSD = parseFloat((totalUSD * (1 - DISCOUNT_RATE)).toFixed(2));
-                console.log(`[Discount] Applied 5% sovereign discount: ₹${totalINR} → ₹${finalTotalINR} | $${totalUSD} → $${finalTotalUSD}`);
+                // Use final totals verified and submitted by checkout process
+                const finalTotalINR = Math.round(totalINR);
+                const finalTotalUSD = parseFloat(totalUSD);
 
                 // Step 3: Perform order insertion and stock updates inside transaction
                 db.serialize(() => {
@@ -1082,42 +1146,42 @@ app.post('/api/admin/abandoned-cart/recover/:id', checkAdminAuth, (req, res) => 
             fs.writeFileSync(logPath, emailHTML);
             console.log(`[Marketing Recovery] Saved visual recovery email to: ${logPath}`);
 
-            // Optional: send simulated email via nodemailer Ethereal sandboxed SMTP!
-            const nodemailer = require('nodemailer');
-            nodemailer.createTestAccount().then(testAccount => {
-                const transporter = nodemailer.createTransport({
-                    host: 'smtp.ethereal.email',
-                    port: 587,
-                    secure: false,
-                    auth: {
-                        user: testAccount.user,
-                        pass: testAccount.pass
-                    }
-                });
+            // Send simulated email via nodemailer SMTP (using cached/production transporter)
+            getEmailTransporter().then(transporter => {
+                if (transporter) {
+                    const mailOptions = {
+                        from: '"Yadhee Heritage" <atelier@yadhee.com>',
+                        to: customerEmail,
+                        subject: 'Acquisition Recovery Notice - Secure 10% Sovereign Discount',
+                        html: emailHTML
+                    };
 
-                const mailOptions = {
-                    from: '"Yadhee Heritage" <atelier@yadhee.com>',
-                    to: customerEmail,
-                    subject: 'Acquisition Recovery Notice - Secure 10% Sovereign Discount',
-                    html: emailHTML
-                };
-
-                transporter.sendMail(mailOptions).then(info => {
-                    console.log(`[Marketing SMTP] Recovery email sent successfully to: ${customerEmail}`);
-                    const previewUrl = nodemailer.getTestMessageUrl(info);
-                    console.log(`[Marketing SMTP] Live preview URL: ${previewUrl}`);
-                    
-                    res.json({ 
-                        success: true, 
-                        previewUrl: previewUrl, 
-                        localPath: `/assets/emails/recovery-${cartId}.html` 
+                    transporter.sendMail(mailOptions).then(info => {
+                        console.log(`[Marketing SMTP] Recovery email sent successfully to: ${customerEmail}`);
+                        let previewUrl = null;
+                        try {
+                            const nodemailer = require('nodemailer');
+                            previewUrl = nodemailer.getTestMessageUrl(info);
+                        } catch(e) {}
+                        if (previewUrl) {
+                            console.log(`[Marketing SMTP] Live preview URL: ${previewUrl}`);
+                        }
+                        
+                        res.json({ 
+                            success: true, 
+                            previewUrl: previewUrl, 
+                            localPath: `/assets/emails/recovery-${cartId}.html` 
+                        });
+                    }).catch(err => {
+                        console.error("Nodemailer error:", err);
+                        res.json({ success: true, localPath: `/assets/emails/recovery-${cartId}.html` });
                     });
-                }).catch(err => {
-                    console.error("Nodemailer error:", err);
+                } else {
+                    console.log(`[Marketing SMTP Offline] Recovery email logged offline for customer: ${customerEmail}`);
                     res.json({ success: true, localPath: `/assets/emails/recovery-${cartId}.html` });
-                });
+                }
             }).catch(err => {
-                console.error("Ethereal creation error:", err);
+                console.error("Transporter setup error:", err);
                 res.json({ success: true, localPath: `/assets/emails/recovery-${cartId}.html` });
             });
         });
@@ -1190,32 +1254,36 @@ app.get('/admin', checkAdminAuth, (req, res) => {
                             db.all("SELECT * FROM newsletter_subscribers ORDER BY id DESC", [], (err, subscribers) => {
                                 db.all("SELECT * FROM abandoned_carts ORDER BY id DESC", [], (err, abandonedCarts) => {
                                     db.all("SELECT * FROM purchase_orders ORDER BY id DESC", [], (err, purchaseOrders) => {
-                                        db.close();
-                                        
-                                        const parsedProducts = products ? products.map(p => ({
-                                            ...p,
-                                            specs: JSON.parse(p.specs || '{}')
-                                        })) : [];
-
-                                        const inventoryAssetValue = parsedProducts.reduce((acc, p) => acc + (p.price_inr * p.stock_quantity), 0);
-                                        const activePOValue = (purchaseOrders || []).reduce((acc, po) => po.status !== 'Received' ? acc + po.total_cost_inr : acc, 0);
-
-                                        res.render('admin_dashboard', {
-                                            stats: {
-                                                order_count: (stats && stats.order_count) || 0,
-                                                total_inr: (stats && stats.total_inr) || 0,
-                                                total_usd: (stats && stats.total_usd) || 0,
-                                                pending_bookings: (bookingStats && bookingStats.booking_count) || 0,
-                                                low_stock: (lowStockStats && lowStockStats.low_stock_count) || 0,
-                                                inventory_asset_value: inventoryAssetValue,
-                                                active_po_value: activePOValue
-                                            },
-                                            products: parsedProducts,
-                                            orders: orders || [],
-                                            bookings: bookings || [],
-                                            subscribers: subscribers || [],
-                                            abandonedCarts: abandonedCarts || [],
-                                            purchaseOrders: purchaseOrders || []
+                                        db.all("SELECT * FROM coupons ORDER BY id DESC", [], (err, coupons) => {
+                                            db.close();
+                                            
+                                            const parsedProducts = products ? products.map(p => ({
+                                                ...p,
+                                                specs: JSON.parse(p.specs || '{}')
+                                            })) : [];
+                                            
+                                            const inventoryAssetValue = parsedProducts.reduce((acc, p) => acc + (p.price_inr * p.stock_quantity), 0);
+                                            const activePOValue = (purchaseOrders || []).reduce((acc, po) => po.status !== 'Received' ? acc + po.total_cost_inr : acc, 0);
+                                            
+                                            res.render('admin_dashboard', {
+                                                stats: {
+                                                    order_count: (stats && stats.order_count) || 0,
+                                                    total_inr: (stats && stats.total_inr) || 0,
+                                                    total_usd: (stats && stats.total_usd) || 0,
+                                                    pending_bookings: (bookingStats && bookingStats.booking_count) || 0,
+                                                    low_stock: (lowStockStats && lowStockStats.low_stock_count) || 0,
+                                                    inventory_asset_value: inventoryAssetValue,
+                                                    active_po_value: activePOValue
+                                                },
+                                                products: parsedProducts,
+                                                orders: orders || [],
+                                                bookings: bookings || [],
+                                                subscribers: subscribers || [],
+                                                abandonedCarts: abandonedCarts || [],
+                                                purchaseOrders: purchaseOrders || [],
+                                                coupons: coupons || [],
+                                                settings: storeSettings
+                                            });
                                         });
                                     });
                                 });
@@ -1328,15 +1396,28 @@ app.post('/admin/products/delete/:id', checkAdminAuth, (req, res) => {
     });
 });
 
-// Update Order fulfillment status
+// Update Order fulfillment status (With Carrier & Tracking Details)
 app.post('/admin/orders/status/:id', checkAdminAuth, (req, res) => {
     const id = req.params.id;
-    const { status } = req.body;
+    const { status, tracking_id, carrier } = req.body;
     
     const db = getDbConnection();
-    db.run('UPDATE orders SET status = ? WHERE id = ?', [status, id], function (err) {
+    db.run('UPDATE orders SET status = ?, tracking_id = ?, carrier = ? WHERE id = ?', [status, tracking_id || null, carrier || null, id], function (err) {
         db.close();
         if (err) console.error(err);
+        
+        if (status === 'Shipped' && tracking_id) {
+            console.log(`[SHIPMENT ALERT] Order #${id} has been marked Shipped via ${carrier}. Tracking: ${tracking_id}`);
+            const dbSelect = getDbConnection();
+            dbSelect.get('SELECT * FROM orders WHERE id = ?', [id], (err, orderRow) => {
+                dbSelect.close();
+                if (orderRow) {
+                    sendShipmentEmail(orderRow)
+                        .then(() => console.log(`[Shipment Notification] Successfully dispatched alert email for Order #${id}`))
+                        .catch(err => console.error(`[Shipment Notification Error] Failed for Order #${id}:`, err));
+                }
+            });
+        }
         res.redirect('/admin');
     });
 });
@@ -1351,6 +1432,160 @@ app.post('/admin/bookings/status/:id', checkAdminAuth, (req, res) => {
         db.close();
         if (err) console.error(err);
         res.redirect('/admin');
+    });
+});
+
+// GET Store Settings JSON API (for admin or checkout verification)
+app.get('/api/admin/settings', checkAdminAuth, (req, res) => {
+    res.json(storeSettings);
+});
+
+// POST Update Store Settings
+app.post('/admin/settings/save', checkAdminAuth, (req, res) => {
+    const { admin_whatsapp_number, shipping_fee_inr, tax_rate_percent, store_email } = req.body;
+    
+    const db = getDbConnection();
+    db.serialize(() => {
+        db.run('INSERT OR REPLACE INTO store_settings (key, value) VALUES (?, ?)', ['admin_whatsapp_number', admin_whatsapp_number || '+91 7356146076']);
+        db.run('INSERT OR REPLACE INTO store_settings (key, value) VALUES (?, ?)', ['shipping_fee_inr', shipping_fee_inr || '0']);
+        db.run('INSERT OR REPLACE INTO store_settings (key, value) VALUES (?, ?)', ['tax_rate_percent', tax_rate_percent || '5']);
+        db.run('INSERT OR REPLACE INTO store_settings (key, value) VALUES (?, ?)', ['store_email', store_email || 'sijokurishingal91@gmail.com'], (err) => {
+            if (err) console.error(err);
+            loadStoreSettings(); // Reload cache
+            res.redirect('/admin');
+        });
+    });
+});
+
+// API: Validate Coupon Code (Public endpoint used during checkout)
+app.post('/api/coupons/validate', (req, res) => {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: "Coupon code is required." });
+    
+    const db = getDbConnection();
+    db.get('SELECT * FROM coupons WHERE UPPER(code) = UPPER(?) AND is_active = 1', [code.trim()], (err, coupon) => {
+        db.close();
+        if (err) return res.status(500).json({ error: "Failed to validate coupon." });
+        
+        if (!coupon) {
+            return res.status(404).json({ error: "Invalid coupon code." });
+        }
+        
+        // Check expiration
+        if (coupon.expires_at) {
+            const expiry = new Date(coupon.expires_at);
+            const now = new Date();
+            if (expiry < now) {
+                return res.status(400).json({ error: "Coupon code has expired." });
+            }
+        }
+        
+        res.json({
+            success: true,
+            code: coupon.code,
+            discount_type: coupon.discount_type,
+            value: coupon.value
+        });
+    });
+});
+
+// Admin: Add Coupon Code
+app.post('/admin/coupons/add', checkAdminAuth, (req, res) => {
+    const { code, discount_type, value, expires_at } = req.body;
+    const cleanCode = code.toUpperCase().trim();
+    
+    const db = getDbConnection();
+    db.run(`
+        INSERT INTO coupons (code, discount_type, value, expires_at)
+        VALUES (?, ?, ?, ?)
+    `, [cleanCode, discount_type, parseInt(value), expires_at || null], (err) => {
+        db.close();
+        if (err) console.error(err);
+        res.redirect('/admin');
+    });
+});
+
+// Admin: Toggle Coupon Active State
+app.post('/admin/coupons/toggle/:id', checkAdminAuth, (req, res) => {
+    const id = req.params.id;
+    const { is_active } = req.body;
+    const activeState = parseInt(is_active) === 1 ? 0 : 1;
+    
+    const db = getDbConnection();
+    db.run('UPDATE coupons SET is_active = ? WHERE id = ?', [activeState, id], (err) => {
+        db.close();
+        if (err) console.error(err);
+        res.redirect('/admin');
+    });
+});
+
+// Admin: Delete Coupon Code
+app.post('/admin/coupons/delete/:id', checkAdminAuth, (req, res) => {
+    const id = req.params.id;
+    
+    const db = getDbConnection();
+    db.run('DELETE FROM coupons WHERE id = ?', [id], (err) => {
+        db.close();
+        if (err) console.error(err);
+        res.redirect('/admin');
+    });
+});
+
+// Admin: Export Orders to CSV
+app.get('/admin/export/orders', checkAdminAuth, (req, res) => {
+    const db = getDbConnection();
+    db.all(`SELECT id, customer_name, customer_email, customer_phone, shipping_address, total_price_inr, status, created_at, tracking_id, carrier FROM orders ORDER BY id DESC`, [], (err, rows) => {
+        db.close();
+        if (err) return res.status(500).send("Database export error.");
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=yadhee_orders_' + Date.now() + '.csv');
+        
+        let csv = 'Order ID,Customer Name,Email,Phone,Shipping Address,Total Price (INR),Fulfillment Status,Date,Tracking ID,Carrier\n';
+        rows.forEach(r => {
+            const address = r.shipping_address ? r.shipping_address.replace(/"/g, '""').replace(/\n/g, ' ') : '';
+            const name = r.customer_name ? r.customer_name.replace(/"/g, '""') : '';
+            csv += `${r.id},"${name}","${r.customer_email}","${r.customer_phone}","${address}",${r.total_price_inr},"${r.status}","${r.created_at}","${r.tracking_id || ''}","${r.carrier || ''}"\n`;
+        });
+        res.send(csv);
+    });
+});
+
+// Admin: Export Inventory list to CSV
+app.get('/admin/export/inventory', checkAdminAuth, (req, res) => {
+    const db = getDbConnection();
+    db.all(`SELECT id, category, subcategory, name, type, price_inr, price_usd, stock_quantity, is_active FROM products`, [], (err, rows) => {
+        db.close();
+        if (err) return res.status(500).send("Database export error.");
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=yadhee_inventory_' + Date.now() + '.csv');
+        
+        let csv = 'Product ID,Category,Subcategory,Name,Type,Price (INR),Price (USD),Stock Level,Status\n';
+        rows.forEach(r => {
+            const name = r.name ? r.name.replace(/"/g, '""') : '';
+            const status = r.is_active === 1 ? 'Active' : 'Hidden';
+            csv += `"${r.id}","${r.category}","${r.subcategory}","${name}","${r.type}",${r.price_inr},${r.price_usd},${r.stock_quantity},"${status}"\n`;
+        });
+        res.send(csv);
+    });
+});
+
+// Admin: Export Subscribers to CSV
+app.get('/admin/export/subscribers', checkAdminAuth, (req, res) => {
+    const db = getDbConnection();
+    db.all(`SELECT * FROM newsletter_subscribers ORDER BY id DESC`, [], (err, rows) => {
+        db.close();
+        if (err) return res.status(500).send("Database export error.");
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=yadhee_subscribers_' + Date.now() + '.csv');
+        
+        let csv = 'ID,Email,Date\n';
+        rows.forEach(r => {
+            csv += `${r.id},"${r.email}","${r.created_at}"\n`;
+        });
+        res.send(csv);
     });
 });
 

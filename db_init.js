@@ -45,6 +45,8 @@ function initDb() {
                 total_price_inr INTEGER NOT NULL,
                 total_price_usd INTEGER NOT NULL,
                 status TEXT NOT NULL DEFAULT 'Pending',
+                tracking_id TEXT,
+                carrier TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -117,15 +119,57 @@ function initDb() {
                 expected_date DATE NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
+        `);
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS coupons (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT UNIQUE NOT NULL,
+                discount_type TEXT NOT NULL,
+                value INTEGER NOT NULL,
+                expires_at TEXT,
+                is_active INTEGER DEFAULT 1
+            )
+        `);
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS store_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
         `, () => {
-            // This callback runs after the schema has been set up successfully.
-            // Let's seed now!
+            // Apply database migrations safely (add tracking fields to existing orders)
+            db.run("ALTER TABLE orders ADD COLUMN tracking_id TEXT", (err) => {
+                // Ignore errors if columns already exist
+            });
+            db.run("ALTER TABLE orders ADD COLUMN carrier TEXT", (err) => {
+                // Ignore errors if columns already exist
+            });
+
+            // Seed default settings and data
             seedData(db);
         });
     });
 }
 
 function seedData(db) {
+    // Seed Default Store Settings
+    const defaultSettings = [
+        { key: 'admin_whatsapp_number', value: '+91 7356146076' },
+        { key: 'shipping_fee_inr', value: '0' },
+        { key: 'tax_rate_percent', value: '5' },
+        { key: 'store_email', value: 'sijokurishingal91@gmail.com' }
+    ];
+
+    defaultSettings.forEach(s => {
+        db.run('INSERT OR IGNORE INTO store_settings (key, value) VALUES (?, ?)', [s.key, s.value]);
+    });
+
+    // Seed default recovery coupon
+    db.run("INSERT OR IGNORE INTO coupons (code, discount_type, value, expires_at, is_active) VALUES (?, ?, ?, ?, ?)", [
+        'YADHEE10', 'percent', 10, '2027-12-31', 1
+    ]);
+
     // Seed Sample Purchase Orders
     db.get('SELECT COUNT(id) AS count FROM purchase_orders', [], (err, row) => {
         if (!err && row && row.count === 0) {
