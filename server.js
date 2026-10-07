@@ -1460,15 +1460,15 @@ app.post('/admin/settings/save', checkAdminAuth, (req, res) => {
 // API: Validate Coupon Code (Public endpoint used during checkout)
 app.post('/api/coupons/validate', (req, res) => {
     const { code } = req.body;
-    if (!code) return res.status(400).json({ error: "Coupon code is required." });
+    if (!code) return res.status(400).json({ valid: false, error: "Coupon code is required." });
     
     const db = getDbConnection();
     db.get('SELECT * FROM coupons WHERE UPPER(code) = UPPER(?) AND is_active = 1', [code.trim()], (err, coupon) => {
         db.close();
-        if (err) return res.status(500).json({ error: "Failed to validate coupon." });
+        if (err) return res.status(500).json({ valid: false, error: "Failed to validate coupon." });
         
         if (!coupon) {
-            return res.status(404).json({ error: "Invalid coupon code." });
+            return res.status(200).json({ valid: false, error: "Invalid coupon code." });
         }
         
         // Check expiration
@@ -1476,12 +1476,12 @@ app.post('/api/coupons/validate', (req, res) => {
             const expiry = new Date(coupon.expires_at);
             const now = new Date();
             if (expiry < now) {
-                return res.status(400).json({ error: "Coupon code has expired." });
+                return res.status(200).json({ valid: false, error: "Coupon code has expired." });
             }
         }
         
         res.json({
-            success: true,
+            valid: true,
             code: coupon.code,
             discount_type: coupon.discount_type,
             value: coupon.value

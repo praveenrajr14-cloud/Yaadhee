@@ -26,5 +26,8 @@
     "nodemailer": "^8.0.9",
     "pdfkit": "^0.18.0",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
   }
 }
