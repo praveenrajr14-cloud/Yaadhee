@@ -9,7 +9,7 @@ services:
     plan: free              # Free tier
 
     # Build: install deps + compile sqlite3 native binary for Linux
-    buildCommand: npm install && npm rebuild sqlite3 --build-from-source
+    buildCommand: npm install --legacy-peer-deps && npm rebuild sqlite3 --build-from-source
 
     # Start: seed DB on every cold start (ephemeral disk), then launch server
     startCommand: node db_init.js && node server.js
