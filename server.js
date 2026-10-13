@@ -136,6 +136,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+app.set('trust proxy', 1); // Trust reverse proxy on Render / Cloudflare
+
 // Session Management with persistent SQLite session store
 const SQLiteStore = require('connect-sqlite3')(session);
 const sessionDb = new sqlite3.Database(path.join(__dirname, 'sessions.db'));
@@ -144,10 +146,12 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'yadhee_secret_key_heritage_2026_royal',
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: { 
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true
+        secure: 'auto', // Automatically uses secure only when connection is actually HTTPS
+        httpOnly: true,
+        sameSite: 'lax'
     }
 }));
 
@@ -353,7 +357,9 @@ app.post('/login', (req, res) => {
                     db.close();
                     if (adminUser && bcrypt.compareSync(password, adminUser.password_hash)) {
                         req.session.isAdmin = true;
-                        return res.redirect('/admin');
+                        return req.session.save((saveErr) => {
+                            res.redirect('/admin');
+                        });
                     }
                     return res.render('login', { error: "Patron details not found. For Admin Suite, please visit /admin/login." });
                 });
@@ -1230,7 +1236,9 @@ app.post('/admin/login', (req, res) => {
             try {
                 if (bcrypt.compareSync(password, user.password_hash)) {
                     req.session.isAdmin = true;
-                    return res.redirect('/admin');
+                    return req.session.save((saveErr) => {
+                        res.redirect('/admin');
+                    });
                 }
             } catch(e) {
                 // Hashing mismatch or raw fallback
@@ -1241,7 +1249,9 @@ app.post('/admin/login', (req, res) => {
             inputHash = crypto.createHash('sha256').update(password + salt).digest('hex');
             if (inputHash === user.password_hash) {
                 req.session.isAdmin = true;
-                return res.redirect('/admin');
+                return req.session.save((saveErr) => {
+                    res.redirect('/admin');
+                });
             }
         }
 
