@@ -136,6 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- APP STATE ---
     let cart = JSON.parse(localStorage.getItem('yadhee_cart')) || [];
     let wishlist = JSON.parse(localStorage.getItem('yadhee_wishlist')) || [];
+    let updateCartPageUI = () => {};
+    let updateCheckoutPageUI = () => {};
 
     // --- SELECT DOM ELEMENTS ---
     const cursor = document.getElementById('custom-cursor');
@@ -517,13 +519,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const addToCart = (id, qty = 1) => {
-        const existingItem = cart.find(item => item.id === id);
+        const existingItem = cart.find(item => String(item.id) === String(id));
         if (existingItem) {
             existingItem.qty += qty;
         } else {
-            cart.push({ id, qty });
+            cart.push({ id: String(id), qty });
         }
         
+        // Always persist to localStorage for instant UI responsiveness across pages
+        localStorage.setItem('yadhee_cart', JSON.stringify(cart));
+
         const isLoggedIn = document.body.dataset.loggedIn === 'true';
         if (isLoggedIn) {
             const targetQty = existingItem ? existingItem.qty : qty;
@@ -533,19 +538,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ productId: id, quantity: targetQty })
             })
             .catch(err => console.error("DB cart add error:", err));
-        } else {
-            localStorage.setItem('yadhee_cart', JSON.stringify(cart));
         }
         
         updateCartUI();
-        showToast(`${productsData[id].name} added to Shopping Bag.`);
+        if (typeof updateCartPageUI === 'function') updateCartPageUI();
+        if (typeof updateCheckoutPageUI === 'function') updateCheckoutPageUI();
+        
+        const prodName = productsData[id] ? productsData[id].name : 'Masterpiece';
+        showToast(`${prodName} added to Shopping Bag.`);
         
         // Auto slide out cart drawer to show off
-        cartOverlay.classList.add('active');
+        if (cartOverlay) cartOverlay.classList.add('active');
     };
 
     const adjustQty = (id, change) => {
-        const item = cart.find(item => item.id === id);
+        const item = cart.find(item => String(item.id) === String(id));
         if (item) {
             item.qty += change;
             if (item.qty <= 0) {
@@ -553,6 +560,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            localStorage.setItem('yadhee_cart', JSON.stringify(cart));
+
             const isLoggedIn = document.body.dataset.loggedIn === 'true';
             if (isLoggedIn) {
                 fetch('/api/cart', {
@@ -561,16 +570,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ productId: id, quantity: item.qty })
                 })
                 .catch(err => console.error("DB cart adjust error:", err));
-            } else {
-                localStorage.setItem('yadhee_cart', JSON.stringify(cart));
             }
             
             updateCartUI();
+            if (typeof updateCartPageUI === 'function') updateCartPageUI();
+            if (typeof updateCheckoutPageUI === 'function') updateCheckoutPageUI();
         }
     };
 
     const removeFromCart = (id) => {
-        cart = cart.filter(item => item.id !== id);
+        cart = cart.filter(item => String(item.id) !== String(id));
+        localStorage.setItem('yadhee_cart', JSON.stringify(cart));
         
         const isLoggedIn = document.body.dataset.loggedIn === 'true';
         if (isLoggedIn) {
@@ -578,11 +588,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'DELETE'
             })
             .catch(err => console.error("DB cart delete error:", err));
-        } else {
-            localStorage.setItem('yadhee_cart', JSON.stringify(cart));
         }
         
         updateCartUI();
+        if (typeof updateCartPageUI === 'function') updateCartPageUI();
+        if (typeof updateCheckoutPageUI === 'function') updateCheckoutPageUI();
         showToast('Item removed from cart.');
     };
 
@@ -1111,32 +1121,43 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                     .then(res => res.json())
                     .then(mergedCart => {
-                        localStorage.removeItem('yadhee_cart');
                         cart = mergedCart;
+                        localStorage.setItem('yadhee_cart', JSON.stringify(mergedCart));
                         updateCartUI();
+                        if (typeof updateCheckoutPageUI === 'function') updateCheckoutPageUI();
+                        if (typeof updateCartPageUI === 'function') updateCartPageUI();
                         showToast("We have merged your guest cart with your account.");
                     })
                     .catch(err => {
                         console.error("Cart sync error:", err);
-                        cart = [];
+                        cart = localCart;
                         updateCartUI();
+                        if (typeof updateCheckoutPageUI === 'function') updateCheckoutPageUI();
+                        if (typeof updateCartPageUI === 'function') updateCartPageUI();
                     });
                 } else {
                     fetch('/api/cart')
                         .then(res => res.json())
                         .then(dbCart => {
                             cart = dbCart;
+                            localStorage.setItem('yadhee_cart', JSON.stringify(dbCart));
                             updateCartUI();
+                            if (typeof updateCheckoutPageUI === 'function') updateCheckoutPageUI();
+                            if (typeof updateCartPageUI === 'function') updateCartPageUI();
                         })
                         .catch(err => {
                             console.error("Cart retrieval error:", err);
-                            cart = [];
+                            cart = JSON.parse(localStorage.getItem('yadhee_cart')) || [];
                             updateCartUI();
+                            if (typeof updateCheckoutPageUI === 'function') updateCheckoutPageUI();
+                            if (typeof updateCartPageUI === 'function') updateCartPageUI();
                         });
                 }
             } else {
                 cart = JSON.parse(localStorage.getItem('yadhee_cart')) || [];
                 updateCartUI();
+                if (typeof updateCheckoutPageUI === 'function') updateCheckoutPageUI();
+                if (typeof updateCartPageUI === 'function') updateCartPageUI();
             }
 
             updateWishlistUI();
@@ -1154,7 +1175,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!cartPageGrid || !cartPageEmpty || !cartPageItems) return;
 
-                const updateCartPageUI = () => {
+                updateCartPageUI = () => {
+                    if (!cart || cart.length === 0) {
+                        cart = JSON.parse(localStorage.getItem('yadhee_cart')) || [];
+                    }
+
                     if (cart.length === 0) {
                         cartPageGrid.style.display = 'none';
                         cartPageEmpty.style.display = 'block';
@@ -1319,7 +1344,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 };
 
-                const updateCheckoutPageUI = () => {
+                updateCheckoutPageUI = () => {
+                    if (!cart || cart.length === 0) {
+                        cart = JSON.parse(localStorage.getItem('yadhee_cart')) || [];
+                    }
+
                     if (cart.length === 0) {
                         checkoutPageGrid.style.display = 'none';
                         checkoutPageEmpty.style.display = 'block';
@@ -1334,17 +1363,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     let rawTotalUSD = 0;
 
                     cart.forEach(item => {
-                        const product = productsData[item.id];
-                        if (!product) return;
+                        const product = productsData[item.id] || {
+                            id: item.id,
+                            name: 'Heritage Masterpiece',
+                            type: 'Authentic Luxury Weave / Jewel',
+                            priceINR: 0,
+                            priceUSD: 0,
+                            img: 'assets/hero_saree.png'
+                        };
 
-                        const itemTotalINR = product.priceINR * item.qty;
+                        const itemTotalINR = (product.priceINR || 0) * item.qty;
                         rawTotalINR += itemTotalINR;
-                        rawTotalUSD += product.priceUSD * item.qty;
+                        rawTotalUSD += (product.priceUSD || 0) * item.qty;
+
+                        const imgUrl = (product.img && product.img.startsWith('/')) ? product.img : `/${product.img || 'assets/hero_saree.png'}`;
 
                         const itemHTML = `
                             <div class="checkout-item-mini-row">
                                 <div class="mini-img-box">
-                                    <img src="/${product.img}" alt="${product.name}" class="mini-img">
+                                    <img src="${imgUrl}" alt="${product.name}" class="mini-img">
                                 </div>
                                 <div class="mini-details">
                                     <h4 class="mini-title">${product.name}</h4>
@@ -1450,7 +1487,27 @@ document.addEventListener('DOMContentLoaded', () => {
                                 localStorage.removeItem('yadhee_cart');
                                 updateCartUI();
                                 checkoutPageForm.reset();
-                                window.location.href = '/vault';
+                                const isUserLoggedIn = document.body.dataset.loggedIn === 'true';
+                                if (isUserLoggedIn) {
+                                    window.location.href = '/vault';
+                                } else {
+                                    if (checkoutPageGrid) {
+                                        checkoutPageGrid.innerHTML = `
+                                            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: rgba(255,255,255,0.85); border: 1px solid var(--color-gold); border-radius: 8px; margin: 2rem 0;">
+                                                <i class="fa-solid fa-circle-check" style="font-size: 3.5rem; color: #4caf50; margin-bottom: 1rem;"></i>
+                                                <h2 style="font-family: var(--font-heading); color: var(--color-crimson); font-size: 2rem; margin-bottom: 0.8rem;">Sovereign Order Placed Successfully!</h2>
+                                                <p style="font-family: var(--font-body); font-size: 1.1rem; color: var(--color-charcoal); margin-bottom: 0.5rem;">Order Reference: <strong>#YDH-ORD-${String(data.orderId).padStart(5, '0')}</strong></p>
+                                                <p style="font-family: var(--font-body); font-size: 0.95rem; color: var(--color-gray-dark); max-width: 600px; margin: 0 auto 2rem;">A formal tax invoice and receipt have been dispatched to <strong>${email}</strong>. Our artisans are preparing your package for insured delivery.</p>
+                                                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                                    <a href="/" class="btn btn-primary">Return Home</a>
+                                                    <a href="/sarees" class="btn btn-secondary">Explore More Weaves</a>
+                                                </div>
+                                            </div>
+                                        `;
+                                    } else {
+                                        window.location.href = '/';
+                                    }
+                                }
                             } else {
                                 showToast(data.error || "Failed to place order.");
                             }

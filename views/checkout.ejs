@@ -65,7 +65,7 @@
                             <label for="cardPageNum">Credit / Debit Card Number *</label>
                             <div class="input-lux-wrapper">
                                 <i class="fa-solid fa-credit-card input-icon-lux"></i>
-                                <input type="text" id="cardPageNum" placeholder="4111 2222 3333 4444" pattern="\\d{16}" title="16-digit card number" required>
+                                <input type="text" id="cardPageNum" placeholder="4111 2222 3333 4444" pattern="[0-9\s]{13,19}" title="Valid card number (13-19 digits)" required>
                             </div>
                         </div>
 
@@ -74,14 +74,14 @@
                                 <label for="cardPageExpiry">Expiry Date *</label>
                                 <div class="input-lux-wrapper">
                                     <i class="fa-regular fa-calendar input-icon-lux"></i>
-                                    <input type="text" id="cardPageExpiry" placeholder="MM/YY" pattern="\\d{2}/\\d{2}" title="MM/YY format" required>
+                                    <input type="text" id="cardPageExpiry" placeholder="MM/YY" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" title="MM/YY format" required>
                                 </div>
                             </div>
                             <div class="form-group-lux">
                                 <label for="cardPageCvv">Security CVV *</label>
                                 <div class="input-lux-wrapper">
                                     <i class="fa-solid fa-lock input-icon-lux"></i>
-                                    <input type="password" id="cardPageCvv" placeholder="***" pattern="\\d{3}" title="3-digit CVV" required>
+                                    <input type="password" id="cardPageCvv" placeholder="***" pattern="[0-9]{3,4}" title="3 or 4 digit CVV" required>
                                 </div>
                             </div>
                         </div>
@@ -168,7 +168,7 @@
         </div>
 
         <!-- Empty Cart Fallback -->
-        <div class="checkout-page-empty-state" id="checkoutPageEmpty" style="display: block;">
+        <div class="checkout-page-empty-state" id="checkoutPageEmpty" style="display: none;">
             <i class="fa-solid fa-bag-shopping empty-icon"></i>
             <h2>Cannot Proceed to Checkout</h2>
             <p>Your shopping bag is empty. Please add items to your cart before proceeding to checkout.</p>

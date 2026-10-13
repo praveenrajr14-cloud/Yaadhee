@@ -361,3 +361,68 @@ test.describe('Security', () => {
     expect(data).not.toHaveProperty('is_active');
   });
 });
+
+// ─────────────────────────────────────────────
+// CHECKOUT & ORDER PLACEMENT TESTS
+// ─────────────────────────────────────────────
+
+test.describe('Checkout & Order Placement Flow', () => {
+  test('Adding item to cart renders checkout page cleanly without "Cannot Proceed" error and places order', async ({ page }) => {
+    // 1. Visit sarees page and add item via localStorage
+    await page.goto(`${BASE_URL}/sarees`);
+    await page.waitForLoadState('networkidle');
+
+    await page.evaluate(() => {
+      localStorage.setItem('yadhee_cart', JSON.stringify([{ id: 's2', qty: 1 }]));
+    });
+
+    // 2. Navigate directly to /checkout
+    await page.goto(`${BASE_URL}/checkout`);
+    await page.waitForLoadState('networkidle');
+
+    // 3. Verify checkoutPageGrid is visible and empty state is NOT visible
+    await expect(page.locator('#checkoutPageGrid')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('#checkoutPageEmpty')).toBeHidden();
+
+    // 4. Verify the order item is listed
+    const itemsListText = await page.locator('#checkoutPageItemsList').textContent();
+    expect(itemsListText).toMatch(/Emerald Mayura Brocade|Qty: 1/i);
+
+    // 5. Fill customer details & card
+    await page.locator('#checkoutPageName').fill('Rani Lakshmi');
+    await page.locator('#checkoutPageEmail').fill('rani.lakshmi@heritage.in');
+    await page.locator('#checkoutPagePhone').fill('+91 9876543210');
+    await page.locator('#checkoutPageAddress').fill('Palace Road, Bengaluru, Karnataka, 560001');
+    await page.locator('#cardPageNum').fill('4111222233334444');
+    await page.locator('#cardPageExpiry').fill('12/28');
+    await page.locator('#cardPageCvv').fill('123');
+
+    // 6. Submit order
+    const submitBtn = page.locator('.submit-secured-order-btn');
+    await submitBtn.scrollIntoViewIfNeeded();
+    await submitBtn.click({ force: true });
+
+    // 7. Verify order completion confirmation
+    await expect(page.getByRole('heading', { name: /Sovereign Order Placed Successfully/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('text=#YDH-ORD-')).toBeVisible();
+  });
+
+  test('Empty cart displays the empty state message on checkout page', async ({ page }) => {
+    await page.goto(`${BASE_URL}/checkout`);
+    await page.waitForLoadState('networkidle');
+
+    // Clear cart in local storage
+    await page.evaluate(() => {
+      localStorage.removeItem('yadhee_cart');
+    });
+
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('#checkoutPageEmpty')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('#checkoutPageGrid')).toBeHidden();
+    const text = await page.textContent('#checkoutPageEmpty');
+    expect(text).toContain('Cannot Proceed to Checkout');
+  });
+});
+
