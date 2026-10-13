@@ -302,6 +302,19 @@ test.describe('Admin Panel', () => {
     // After logout should be redirected away from admin
     expect(page.url()).not.toMatch(/\/admin$/);
   });
+
+  test('Admin shipping label renders correctly when authenticated', async ({ page }) => {
+    await page.goto(`${BASE_URL}/admin/login`);
+    await page.locator('input[name="username"]').fill(ADMIN_USER);
+    await page.locator('input[name="password"]').fill(ADMIN_PASS);
+    await page.locator('button[type="submit"]').click();
+    await page.waitForURL(`${BASE_URL}/admin`);
+
+    await page.goto(`${BASE_URL}/admin/orders/shipping-label/6`);
+    await page.waitForLoadState('networkidle');
+    const text = await page.textContent('body');
+    expect(text).toMatch(/SHIPPING LABEL|SHIP TO|AWB|YADHEE/i);
+  });
 });
 
 // ─────────────────────────────────────────────
@@ -309,6 +322,11 @@ test.describe('Admin Panel', () => {
 // ─────────────────────────────────────────────
 
 test.describe('Security', () => {
+  test('Admin shipping label blocks unauthenticated access - redirects to login', async ({ page }) => {
+    await page.goto(`${BASE_URL}/admin/orders/shipping-label/6`);
+    await page.waitForLoadState('networkidle');
+    expect(page.url()).toContain('/admin/login');
+  });
   test('Admin export routes block unauthenticated access - redirects to login', async ({ page }) => {
     // Playwright APIRequest follows redirects; use browser page to detect final URL
     await page.goto(`${BASE_URL}/admin/export/orders`);

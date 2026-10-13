@@ -1628,6 +1628,31 @@ app.get('/admin/orders/invoice/:id', checkAdminAuth, (req, res) => {
     });
 });
 
+// Printable Courier Package Delivery Label (4x6" Flipkart / Meesho / Amazon Standard)
+app.get('/admin/orders/shipping-label/:id', checkAdminAuth, (req, res) => {
+    const orderId = req.params.id;
+    const db = getDbConnection();
+    db.get("SELECT * FROM orders WHERE id = ?", [orderId], (err, order) => {
+        if (err || !order) {
+            db.close();
+            return res.status(404).send("Order record not found for label printing.");
+        }
+        db.all(`
+            SELECT oi.*, p.name, p.type, p.image_url
+            FROM order_items oi
+            LEFT JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = ?
+        `, [orderId], (itemsErr, items) => {
+            db.close();
+            res.render('shipping_label', {
+                order: order,
+                items: items || [],
+                settings: storeSettings
+            });
+        });
+    });
+});
+
 // Inline Stock Level Updates API
 app.post('/api/admin/products/stock/:id', checkAdminAuth, (req, res) => {
     const productId = req.params.id;
