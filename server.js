@@ -343,13 +343,22 @@ app.post('/login', (req, res) => {
             return res.render('login', { error: "Please enter all credentials." });
         }
         db.get('SELECT * FROM users WHERE username = ? OR email = ?', [usernameOrEmail, usernameOrEmail], (err, user) => {
-            db.close();
             if (err) {
+                db.close();
                 return res.render('login', { error: "Security check error." });
             }
             if (!user) {
-                return res.render('login', { error: "Patron details not found." });
+                // Smart Admin Fallback: If store administrator logs in through customer login page
+                return db.get('SELECT * FROM admin_users WHERE username = ?', [usernameOrEmail], (adminErr, adminUser) => {
+                    db.close();
+                    if (adminUser && bcrypt.compareSync(password, adminUser.password_hash)) {
+                        req.session.isAdmin = true;
+                        return res.redirect('/admin');
+                    }
+                    return res.render('login', { error: "Patron details not found. For Admin Suite, please visit /admin/login." });
+                });
             }
+            db.close();
             if (bcrypt.compareSync(password, user.password_hash)) {
                 req.session.user = {
                     id: user.id,
